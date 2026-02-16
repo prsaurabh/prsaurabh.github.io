@@ -22,7 +22,7 @@
     <div class="container">
         <div class="breadcrumb"><a href="../projects.html">Projects</a> / LocalRAG</div>
         <h1>LocalRAG</h1>
-        <p class="page-subtitle">Privacy-Focused Retrieval-Augmented Generation</p>
+        <p class="page-subtitle">Privacy-Focused Retrieval-Augmented Generation with Multimodal Support</p>
     </div>
 </div>
 
@@ -30,32 +30,46 @@
     <div class="content">
 
         <h2>Overview</h2>
-        <p>Dual-mode RAG application designed to demonstrate traditional RAG fundamentals. Public mode leverages AWS Bedrock for cloud-based inference, while Private mode runs fully local with Ollama, ensuring no data ever leaves your machine. The system supports PDF, DOCX, TXT, and image files with OCR-based text extraction, giving users flexibility across document formats while maintaining control over data privacy.</p>
+        <p>Dual-mode RAG application demonstrating both traditional and multimodal RAG capabilities. Public mode leverages AWS Bedrock for cloud-based inference, while Private mode runs fully local with Ollama and Docling, ensuring no data ever leaves your machine. The system supports PDF, DOCX, TXT, and image files through two distinct pipelines -- text extraction with layout-aware document processing, and direct multimodal image embedding -- giving users flexibility across document formats while maintaining control over data privacy.</p>
 
         <h2>Architecture</h2>
         <div class="diagram">
+<strong>Pipeline 1: Text Extraction</strong><br>
 Documents (PDF, DOCX, TXT, Images)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-Text Extraction (PyMuPDF + OCR)<br>
+Docling (Private) / Bedrock Vision (Public)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-Chunking &#8594; Embedding &#8594; ChromaDB<br>
+Semantic Chunking &#8594; Text Embedding &#8594; ChromaDB<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-Query &#8594; Vector Search &#8594; Top-K Chunks<br>
+Hybrid Retrieval (Vector + BM25 + Metadata)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-LLM (Bedrock or Ollama) &#8594; Answer
+LLM (Bedrock or Ollama) &#8594; Answer<br><br>
+
+<strong>Pipeline 2: Multimodal Image Embedding</strong><br>
+Image Upload<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+Nomic Vision (Private) / Cohere Embed v4 (Public)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+ChromaDB Image Collection (same latent space as text)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+Text Query &#8594; Cross-Modal Retrieval &#8594; Original Image<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+Vision LLM &#8594; Answer
         </div>
 
         <h2>Dual Mode Design</h2>
-        <p><strong>Public Mode</strong> uses AWS Bedrock Claude for generation and Bedrock Vision for OCR. Documents are sent to AWS for processing, which provides higher accuracy and faster inference but requires cloud connectivity and an AWS account.</p>
-        <p><strong>Private Mode</strong> runs entirely on your local machine using Ollama for LLM inference and Tesseract for OCR. No data leaves the device. This mode trades some speed and accuracy for complete data privacy -- ideal for sensitive or confidential documents.</p>
-        <p>The privacy trade-off is straightforward: Public mode gives you access to frontier models and vision capabilities at the cost of sending data to AWS. Private mode keeps everything local at the cost of requiring local compute resources and accepting the limitations of smaller open-source models.</p>
+        <p><strong>Public Mode</strong> uses AWS Bedrock Claude for generation, Bedrock Vision for OCR, Titan Embed v2 for text embeddings, and Cohere Embed v4 for multimodal image embeddings. Conversation memory is managed by Mem0 vector store for intelligent context retention.</p>
+        <p><strong>Private Mode</strong> runs entirely on your local machine using Ollama for LLM inference, Docling for layout-aware document processing, and Nomic embeddings for both text and vision in a shared latent space. Conversation memory uses a sliding window approach. No data leaves the device.</p>
+        <p>Every step in the pipeline has a private/public branch -- from text extraction through chunking, embedding, retrieval, metadata extraction, generation, and memory management. The privacy trade-off is straightforward: Public mode gives you access to frontier models at the cost of sending data to AWS. Private mode keeps everything local at the cost of requiring local compute resources.</p>
 
         <h2>Key Features</h2>
         <ul>
-            <li><strong>Multi-format document support</strong> -- PDF, DOCX, TXT, and images (PNG, JPG) are all handled through a unified text extraction pipeline.</li>
-            <li><strong>PyMuPDF for PDF processing</strong> -- Replaced the original Poppler dependency with PyMuPDF (fitz), eliminating a complex native library dependency and simplifying installation across platforms.</li>
-            <li><strong>Local embeddings with nomic-embed-text</strong> -- Both modes use the same local embedding model, keeping vector representations consistent regardless of the inference mode selected.</li>
-            <li><strong>Persistent ChromaDB storage</strong> -- Document embeddings are stored on disk and survive application restarts, avoiding re-ingestion of previously processed documents.</li>
+            <li><strong>Docling document processing</strong> -- IBM's open-source (MIT) layout-aware document processor replaces PyPDF2, Tesseract, and python-docx with a single tool that preserves tables, headings, and document structure as Markdown.</li>
+            <li><strong>Multimodal image embeddings</strong> -- Images can be embedded directly into a shared vector space with text using Nomic Vision (768d, private) or Cohere Embed v4 (1024d, public), enabling text-to-image cross-modal search.</li>
+            <li><strong>Vision LLM at generation time</strong> -- Retrieved images are passed as original files to vision models (Ollama qwen2.5-vl or Bedrock Claude), so the LLM sees the actual image, not just OCR text.</li>
+            <li><strong>Hybrid retrieval</strong> -- Combines dense vector search, BM25 keyword search, and LLM-based metadata filtering with weighted ensemble for better recall.</li>
+            <li><strong>Multi-format support</strong> -- PDF, DOCX, TXT, and images (PNG, JPG, TIFF, BMP, WebP) through a unified extraction pipeline.</li>
+            <li><strong>Conversation memory</strong> -- Sliding window (private) or Mem0 vector memory (public) for multi-turn context.</li>
         </ul>
 
         <h2>Metrics</h2>
@@ -65,7 +79,11 @@ LLM (Bedrock or Ollama) &#8594; Answer
                 <div class="label">Operating Modes</div>
             </div>
             <div class="metric">
-                <div class="number">4</div>
+                <div class="number">2</div>
+                <div class="label">RAG Pipelines</div>
+            </div>
+            <div class="metric">
+                <div class="number">10</div>
                 <div class="label">File Formats</div>
             </div>
             <div class="metric">
@@ -79,9 +97,13 @@ LLM (Bedrock or Ollama) &#8594; Answer
             <span class="tag highlight">AWS Bedrock</span>
             <span class="tag highlight">Ollama</span>
             <span class="tag highlight">ChromaDB</span>
-            <span class="tag">PyMuPDF</span>
-            <span class="tag">Tesseract</span>
-            <span class="tag">Flask</span>
+            <span class="tag highlight">Docling</span>
+            <span class="tag">Nomic Embed</span>
+            <span class="tag">Cohere Embed v4</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">Next.js</span>
+            <span class="tag">LangChain</span>
+            <span class="tag">Docker</span>
             <span class="tag">Python</span>
         </div>
 
