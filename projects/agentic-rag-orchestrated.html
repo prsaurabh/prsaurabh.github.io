@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic RAG - Orchestrated | Saurabh Prasad</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+    <a href="../index.html" class="nav-brand">SP</a>
+    <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../projects.html">Projects</a>
+        <a href="../articles.html">Articles</a>
+        <a href="../assets/resume.pdf">Resume</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <div class="breadcrumb"><a href="../projects.html">Projects</a> / Agentic RAG - Orchestrated</div>
+        <h1>Agentic RAG - Orchestrated</h1>
+        <p class="page-subtitle">Developer-Controlled Pipeline with LangGraph</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+
+        <h2>Overview</h2>
+        <p>A LangGraph state machine where the developer explicitly defines the execution flow. Unlike the ReAct approach where the LLM decides what to do next, here the graph controls routing between nodes. Each node calls the LLM for a specific, scoped task -- classify, grade, rewrite, generate -- but the transitions between nodes are deterministic and developer-defined. The system includes self-correction through document grading and query rewriting, ensuring answer quality without unbounded agent loops.</p>
+
+        <h2>Architecture</h2>
+        <div class="diagram">
+START<br>
+&nbsp;&nbsp;&#8595;<br>
+Router (LLM classifies: vectorstore or web_search)<br>
+&nbsp;&nbsp;&#8595;<br>
+Retriever (ChromaDB or Tavily)<br>
+&nbsp;&nbsp;&#8595;<br>
+Grader (LLM: are docs relevant?)<br>
+&nbsp;&nbsp;&#9500;&#9472;&#9472; Yes &#8594; Generator (LLM synthesizes answer)<br>
+&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hallucination Check (LLM: is answer faithful?)<br>
+&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9500;&#9472;&#9472; Yes &#8594; END<br>
+&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472;&#9472; No &#8594; Generator (retry, max 1)<br>
+&nbsp;&nbsp;&#9492;&#9472;&#9472; No &#8594; Rewriter (LLM rewrites query)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retriever (loop, max 2 retries)
+        </div>
+
+        <h2>Self-Correction Loops</h2>
+        <p>The graph implements two distinct self-correction mechanisms, each with bounded retries to prevent infinite loops:</p>
+        <p><strong>Grader-Rewriter Loop (max 2 retries)</strong> -- After retrieval, the Grader node asks the LLM whether the retrieved documents are relevant to the query. If the documents are judged irrelevant, the Rewriter node rewrites the query to improve retrieval, and the system loops back to the Retriever. This can happen at most twice. After two failed attempts, the graph forces generation with whatever documents are available rather than looping indefinitely.</p>
+        <p><strong>Hallucination-Regeneration Loop (max 1 retry)</strong> -- After the Generator produces an answer, the Hallucination Check node asks the LLM whether the answer is faithful to the retrieved documents. If the answer is flagged as hallucinated, the Generator runs once more with the same context. After one retry, the graph accepts the output and terminates. This prevents the system from endlessly regenerating while still catching obvious hallucinations.</p>
+
+        <h2>6 Nodes, 5 LLM Calls</h2>
+        <p>The graph consists of six nodes, five of which invoke the LLM for distinct tasks:</p>
+        <ul>
+            <li><strong>Router</strong> -- LLM classifies the query as requiring vector store retrieval or web search.</li>
+            <li><strong>Retriever</strong> -- No LLM call. Fetches documents from ChromaDB or Tavily based on the router's decision.</li>
+            <li><strong>Grader</strong> -- LLM evaluates whether retrieved documents are relevant to the original query.</li>
+            <li><strong>Rewriter</strong> -- LLM rewrites the query to improve retrieval results on the next attempt.</li>
+            <li><strong>Generator</strong> -- LLM synthesizes a final answer from the retrieved context.</li>
+            <li><strong>Hallucination Check</strong> -- LLM verifies the generated answer is grounded in the retrieved documents.</li>
+        </ul>
+
+        <h2>Metrics</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="number">6</div>
+                <div class="label">Graph Nodes</div>
+            </div>
+            <div class="metric">
+                <div class="number">5</div>
+                <div class="label">LLM Calls</div>
+            </div>
+            <div class="metric">
+                <div class="number">2</div>
+                <div class="label">Self-Correction Loops</div>
+            </div>
+        </div>
+
+        <h2>Technologies</h2>
+        <div class="tags">
+            <span class="tag highlight">LangGraph</span>
+            <span class="tag highlight">LangChain</span>
+            <span class="tag highlight">AWS Bedrock</span>
+            <span class="tag">ChromaDB</span>
+            <span class="tag">Tavily</span>
+            <span class="tag">Streamlit</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Python</span>
+        </div>
+
+        <div>
+            <a href="https://github.com/prsaurabh/agentic-rag-orchestrated" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
+        </div>
+
+    </div>
+</div>
+
+<footer class="footer">
+    Saurabh Prasad - New York, NY
+</footer>
+
+</body>
+</html>

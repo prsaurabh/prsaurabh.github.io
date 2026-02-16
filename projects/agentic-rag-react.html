@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic RAG - ReAct Agent | Saurabh Prasad</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+    <a href="../index.html" class="nav-brand">SP</a>
+    <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../projects.html">Projects</a>
+        <a href="../articles.html">Articles</a>
+        <a href="../assets/resume.pdf">Resume</a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <div class="breadcrumb"><a href="../projects.html">Projects</a> / Agentic RAG - ReAct Agent</div>
+        <h1>Agentic RAG - ReAct Agent</h1>
+        <p class="page-subtitle">Autonomous Tool Selection with LlamaIndex</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+
+        <h2>Overview</h2>
+        <p>A LlamaIndex ReAct agent that autonomously reasons about which tools to use for any given query. Unlike a fixed pipeline, the LLM itself drives the decision loop -- Reason, Act, Observe, Repeat -- iterating through available tools until it has gathered enough context to produce a final answer. The agent decides when to search the vector store, grep through files, read full documents, or query the web, all without hard-coded routing logic.</p>
+
+        <h2>Architecture</h2>
+        <div class="diagram">
+User Query<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+ReAct Agent (Bedrock Claude)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+[Reason] What do I need?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+[Act] Select Tool:<br>
+&#9500;&#9472;&#9472; vector_search &#8594; ChromaDB<br>
+&#9500;&#9472;&#9472; file_search &nbsp;&nbsp; &#8594; Keyword grep<br>
+&#9500;&#9472;&#9472; file_read &nbsp;&nbsp;&nbsp; &#8594; Full file content<br>
+&#9492;&#9472;&#9472; web_search &nbsp;&nbsp; &#8594; Tavily API<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+[Observe] Process result<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
+Loop or Answer
+        </div>
+
+        <h2>Key Design Decisions</h2>
+        <p><strong>LlamaIndex v0.14 AgentWorkflow</strong> -- Built on the latest AgentWorkflow API rather than the deprecated ReActAgent class. This provides a cleaner interface for defining tools and handling the agent loop with proper async support.</p>
+        <p><strong>BedrockConverse for async streaming</strong> -- Uses the BedrockConverse LLM adapter which supports async streaming natively, enabling real-time token-by-token output in the Streamlit frontend as the agent reasons through its steps.</p>
+        <p><strong>Local embeddings</strong> -- Despite using Bedrock for inference, embeddings are generated locally with nomic-embed-text via Ollama. This keeps the embedding layer consistent across projects and avoids per-query embedding costs.</p>
+        <p><strong>Priority-based system prompt</strong> -- The agent's system prompt establishes a clear tool priority order: vector search first, then file search, then file read, with web search as a fallback. This guides the agent toward the most efficient retrieval path without hard-coding the logic.</p>
+
+        <h2>MCP Server</h2>
+        <p>The project includes a Model Context Protocol (MCP) server that exposes ChromaDB as a set of tools for external clients. Two tools are provided: <strong>search_documents</strong> for semantic vector search and <strong>list_documents</strong> for browsing the document collection. The server supports both stdio and SSE transport, making it compatible with Claude Desktop and other MCP-aware clients that need access to the project's knowledge base.</p>
+
+        <h2>Metrics</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="number">4</div>
+                <div class="label">Agent Tools</div>
+            </div>
+            <div class="metric">
+                <div class="number">ReAct</div>
+                <div class="label">Reasoning Pattern</div>
+            </div>
+            <div class="metric">
+                <div class="number">MCP</div>
+                <div class="label">Server Protocol</div>
+            </div>
+        </div>
+
+        <h2>Technologies</h2>
+        <div class="tags">
+            <span class="tag highlight">LlamaIndex</span>
+            <span class="tag highlight">AWS Bedrock</span>
+            <span class="tag highlight">ChromaDB</span>
+            <span class="tag">Tavily</span>
+            <span class="tag">MCP</span>
+            <span class="tag">Streamlit</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Python</span>
+        </div>
+
+        <div>
+            <a href="https://github.com/prsaurabh/agentic-rag-react" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
+        </div>
+
+    </div>
+</div>
+
+<footer class="footer">
+    Saurabh Prasad - New York, NY
+</footer>
+
+</body>
+</html>
