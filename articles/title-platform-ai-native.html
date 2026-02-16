@@ -57,6 +57,108 @@
             border-radius: 0 8px 8px 0;
         }
         .decision-box strong { color: var(--accent-orange); }
+        .skill-example {
+            background: #0d1117;
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .skill-example .comment { color: #8b949e; }
+        .skill-example .key { color: #79c0ff; }
+        .skill-example .value { color: #a5d6ff; }
+        .skill-example .heading { color: #d2a8ff; font-weight: bold; }
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 20px 0;
+        }
+        .layer-stack-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .layer-stack-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+        .layer-stack-item:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        .layer-stack-item + .layer-stack-item {
+            border-top: none;
+        }
+        .layer-label {
+            min-width: 140px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .layer-protocol {
+            color: var(--accent-blue);
+            font-weight: 600;
+            min-width: 80px;
+            font-size: 0.85rem;
+        }
+        .layer-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .tier-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .tier-box h4 {
+            color: var(--accent-blue);
+            margin-bottom: 4px;
+        }
+        .tier-box .tier-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+        .tier-box ul {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-left: 16px;
+        }
+        .tier-box li { margin-bottom: 4px; }
+        .governance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .governance-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .governance-item h4 {
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        .governance-item p {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -78,7 +180,7 @@
         <h1>AI-Native Title Platform</h1>
         <p class="page-subtitle">Anywhere Real Estate | Staff Software Engineer | 2025 - Present</p>
         <div style="margin-top: 12px;">
-            <span class="version-badge">v3 &mdash; Current</span>
+            <span class="version-badge">v4 &mdash; Current</span>
             <span style="color: var(--text-secondary); font-size: 0.85rem;">Last updated: Feb 16, 2026</span>
         </div>
     </div>
@@ -92,6 +194,10 @@
         <!-- ============================================ -->
         <h2>Changelog</h2>
         <div class="changelog">
+            <div class="changelog-entry">
+                <div class="changelog-version">v4</div>
+                <div class="changelog-note">Added Agent Skills as knowledge store pattern, three-tier delegation model, agent protocol stack (MCP + Skills + A2A), skill governance &amp; lifecycle, hybrid discovery routing, cross-skill conflict resolution, skill testing. Restructured Knowledge Store as Skill Registry.</div>
+            </div>
             <div class="changelog-entry">
                 <div class="changelog-version">v3</div>
                 <div class="changelog-note">Full reframe: AI-native modernization, not a search/RAG system. Added business-logic-as-knowledge pattern, multi-store architecture, Strangler Fig migration, neuro-symbolic framing, CRUD scope.</div>
@@ -119,6 +225,12 @@
         <div class="decision-box">
             <strong>Metrics</strong> &mdash; No concrete metrics yet (search latency, processing improvements, number of consumers). To be added when available.
         </div>
+        <div class="decision-box">
+            <strong>Skill Format</strong> &mdash; Will skills use the open SKILL.md standard, a custom YAML/JSON schema, or a database-backed format? The open standard has broad ecosystem support but may need enterprise extensions for governance fields.
+        </div>
+        <div class="decision-box">
+            <strong>A2A Adoption Timeline</strong> &mdash; A2A v1.0 is still in progress. Decision needed: adopt Agent Card format now for internal agent registry, or wait for spec to finalize? Recommendation: borrow the schema now, migrate to full A2A later.
+        </div>
 
         <!-- ============================================ -->
         <!-- THE PROJECT                                   -->
@@ -127,16 +239,249 @@
         <p>Architecting and leading the AI-native modernization of a core title insurance &amp; closing platform. This is not an AI feature bolted onto a legacy system &mdash; it is a fundamental rebuild where the LLM becomes the reasoning engine, business logic lives as retrievable knowledge rather than hardcoded rules, and every integration speaks MCP.</p>
         <p>The legacy system manages ~800 TB of transaction records, closing documents, and operational data across multiple business units. The modernization follows a Strangler Fig pattern: existing APIs continue operating while AI-native microservices are built in parallel to progressively replace them.</p>
 
+        <!-- ============================================ -->
+        <!-- THE CORE IDEA                                 -->
+        <!-- ============================================ -->
         <h2>The Core Idea</h2>
-        <h3>Business Logic as Retrievable Knowledge</h3>
-        <p>In a traditional system, 5 business rules = 5 hardcoded functions. In this architecture, business rules and workflows are stored as natural language in knowledge stores (vector, file system, web, MCP-accessible endpoints). The LLM retrieves the relevant rules at runtime and reasons over them to execute operations.</p>
-        <p>This is the recognized pattern called <strong>Retrieval-Augmented Business Logic</strong> (or "Cognitive Automation" in academic literature). It makes the system generic and adaptable &mdash; rules change without code changes.</p>
+
+        <h3>Business Logic as Agent Skills</h3>
+        <p>In a traditional system, 5 business rules = 5 hardcoded functions. In this architecture, business rules and workflows are packaged as <strong>Agent Skills</strong> &mdash; structured natural language definitions with metadata, trigger conditions, step-by-step execution instructions, and declared dependencies.</p>
+        <p>This maps to the recognized patterns: <strong>Retrieval-Augmented Business Logic</strong> (academic), <strong>Cognitive Automation</strong> (industry), and the <strong>Agent Skills open standard</strong> (agentskills.io, adopted by Claude Code, OpenAI Codex, Cursor, GitHub Copilot, and 30+ tools since Oct 2025). The key insight: skills are not just "documents to retrieve" &mdash; they are executable units with enough structure for an LLM to discover, load, and execute them correctly.</p>
+        <p>A title insurance business rule, expressed as a skill:</p>
+        <div class="skill-example"><span class="comment"># Skill metadata (Level 1 &mdash; ~100 tokens, always in context)</span>
+<span class="key">name:</span> <span class="value">title-chain-examination</span>
+<span class="key">description:</span> <span class="value">Examine title chain for ownership continuity, gaps, and defects</span>
+<span class="key">triggers:</span> <span class="value">title search complete, examination requested, chain review</span>
+<span class="key">category:</span> <span class="value">title/examination</span>
+<span class="key">state-scope:</span> <span class="value">[FL, NY, CA, TX]</span>
+<span class="key">priority:</span> <span class="value">100</span>
+<span class="key">version:</span> <span class="value">2.1</span>
+<span class="key">owner:</span> <span class="value">title-ops-team</span>
+
+<span class="heading">## Instructions (Level 2 &mdash; loaded when activated)</span>
+
+When examining a title chain:
+1. Retrieve chain of ownership from county records (MCP: county-records)
+2. Verify continuous chain back minimum 60 years
+3. Flag any ownership gaps exceeding 30 days
+4. Check for unreleased liens, judgments, or encumbrances
+5. Cross-reference tax assessor records for discrepancies
+6. Apply state-specific requirements (see references/)
+
+<span class="heading">## Constraints</span>
+- Must cite every source document by recording reference
+- Cannot approve chain with unresolved gaps
+- Escalate to human examiner if confidence &lt; 85%
+
+<span class="heading">## MCP Dependencies (Level 3 &mdash; connected on demand)</span>
+- county-records: ownership chain retrieval
+- tax-assessor: tax lien verification
+- judgment-search: outstanding judgments
+- underwriting-rules: risk assessment thresholds</div>
 
         <h3>AI-Native, Not AI-Augmented</h3>
-        <p>The LLM is the core reasoning engine, not an add-on. It plans which business rules apply, executes multi-step workflows, and self-corrects when results are ambiguous. Deterministic guardrails validate every step before anything is committed. This is the <strong>Neuro-Symbolic Hybrid Architecture</strong> &mdash; LLM reasoning + symbolic verification.</p>
+        <p>The LLM is the core reasoning engine, not an add-on. It plans which business rules (skills) apply, executes multi-step workflows, and self-corrects when results are ambiguous. Deterministic guardrails validate every step before anything is committed. This is the <strong>Neuro-Symbolic Hybrid Architecture</strong> &mdash; LLM reasoning + symbolic verification.</p>
 
         <h3>MCP as the Universal Protocol</h3>
         <p>Every data source and system integration speaks MCP. Legacy databases (SQL Server), document stores, external APIs, and agent tools are all wrapped as MCP servers with dynamic discovery. The system is federated and composable by design.</p>
+
+        <!-- ============================================ -->
+        <!-- AGENT SKILLS ARCHITECTURE                     -->
+        <!-- ============================================ -->
+        <h2>Agent Skills Architecture</h2>
+
+        <h3>Progressive Disclosure &mdash; The Core Pattern</h3>
+        <p>At ~800 TB scale with potentially hundreds of business rules, you cannot load everything into an LLM's context window. Progressive disclosure solves this with three-level loading:</p>
+
+        <div class="tier-grid">
+            <div class="tier-box">
+                <h4>Level 1 &mdash; Discovery</h4>
+                <div class="tier-subtitle">~100 tokens per skill &bull; Always in context</div>
+                <ul>
+                    <li>Skill name + description + triggers</li>
+                    <li>With 500 business rules: ~50K tokens</li>
+                    <li>Agent knows what's available without loading details</li>
+                    <li>Semantic + categorical matching for selection</li>
+                </ul>
+            </div>
+            <div class="tier-box">
+                <h4>Level 2 &mdash; Instructions</h4>
+                <div class="tier-subtitle">Loaded when skill is activated</div>
+                <ul>
+                    <li>Full step-by-step execution instructions</li>
+                    <li>Constraints, edge cases, examples</li>
+                    <li>Only the matched skill loads, not all 500</li>
+                    <li>Recommended: &lt;5000 tokens per skill</li>
+                </ul>
+            </div>
+            <div class="tier-box">
+                <h4>Level 3 &mdash; Resources</h4>
+                <div class="tier-subtitle">Connected on demand</div>
+                <ul>
+                    <li>MCP server connections to data sources</li>
+                    <li>Reference documents, templates, schemas</li>
+                    <li>Scripts for deterministic operations</li>
+                    <li>Loaded only when the agent's reasoning requires them</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>The Knowledge Store Becomes a Skill Registry</h3>
+        <p>The v3 architecture defined a "Knowledge Store" for business rules. In v4, this evolves into a <strong>Skill Registry</strong> &mdash; a governed, discoverable, version-controlled collection of agent skills organized by domain:</p>
+        <div class="skill-example"><span class="heading">skill-registry/</span>
+  <span class="key">title/</span>
+    examination/
+      SKILL.md                  <span class="comment"># Title chain examination rules</span>
+      references/
+        state-requirements/     <span class="comment"># FL.md, NY.md, CA.md, TX.md</span>
+      tests/
+        test-clean-chain.md     <span class="comment"># Expected: approve</span>
+        test-gap-detected.md    <span class="comment"># Expected: flag + escalate</span>
+    commitment-generation/
+      SKILL.md                  <span class="comment"># Schedule A/B generation rules</span>
+    defect-resolution/
+      SKILL.md                  <span class="comment"># How to resolve specific title defects</span>
+  <span class="key">closing/</span>
+    coordination/
+      SKILL.md                  <span class="comment"># Closing workflow orchestration</span>
+    fund-disbursement/
+      SKILL.md                  <span class="comment"># Wire transfer rules, escrow release</span>
+    document-preparation/
+      SKILL.md                  <span class="comment"># Deed, settlement statement generation</span>
+  <span class="key">underwriting/</span>
+    risk-assessment/
+      SKILL.md                  <span class="comment"># Risk scoring and decisioning</span>
+    exception-handling/
+      SKILL.md                  <span class="comment"># Standard exception resolution</span>
+  <span class="key">compliance/</span>
+    respa-trid/
+      SKILL.md                  <span class="comment"># RESPA/TRID compliance checks</span>
+    state-regulations/
+      SKILL.md                  <span class="comment"># State-specific regulatory requirements</span>
+    pii-handling/
+      SKILL.md                  <span class="comment"># PII detection and redaction rules</span></div>
+
+        <!-- ============================================ -->
+        <!-- SKILL DISCOVERY AT SCALE                      -->
+        <!-- ============================================ -->
+        <h2>Skill Discovery at Scale</h2>
+        <p>Pure semantic matching ("find the skill whose description best matches this query") works at 10-50 skills. At 500+ business rules, it breaks down due to <strong>semantic confusion</strong> &mdash; research shows agent performance degrades sharply when skill selection exceeds 50-100 options. The solution is <strong>hybrid routing</strong>:</p>
+
+        <h3>Two-Phase Discovery</h3>
+        <div class="diagram">
+Phase 1: Categorical Pre-Filtering (Deterministic)<br>
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
+Request context: {state: FL, type: examination, amount: $450K}<br>
+<br>
+Filter by:<br>
+&bull; Domain category (title / closing / underwriting / compliance)<br>
+&bull; State scope (FL-specific rules + national rules)<br>
+&bull; Transaction type (residential, commercial, refinance)<br>
+&bull; Amount threshold (standard vs. high-value)<br>
+<br>
+Result: 500 skills &rarr; ~15-30 candidates<br>
+<br>
+Phase 2: Semantic Matching (LLM-Assisted)<br>
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
+Within the narrowed set, match against request context:<br>
+&bull; Trigger conditions in skill metadata<br>
+&bull; Description similarity to query intent<br>
+&bull; Historical activation patterns (which skills fired for similar contexts)<br>
+<br>
+Result: ~15-30 candidates &rarr; 2-5 activated skills
+        </div>
+        <p>This hybrid approach keeps deterministic control over the first pass (fast, auditable, no hallucination risk) while leveraging LLM understanding for nuanced final selection.</p>
+
+        <h3>Skill Metadata for Routing</h3>
+        <p>Each skill declares routing-relevant metadata in its frontmatter. This is what the categorical pre-filter operates on:</p>
+        <div class="skill-example"><span class="key">category:</span> <span class="value">title/examination</span>         <span class="comment"># Domain path for hierarchical filtering</span>
+<span class="key">state-scope:</span> <span class="value">[FL, NY, CA, TX]</span>        <span class="comment"># Which states this rule applies to</span>
+<span class="key">transaction-types:</span> <span class="value">[residential, commercial]</span>  <span class="comment"># Applicable transaction types</span>
+<span class="key">amount-threshold:</span> <span class="value">0</span>                <span class="comment"># Minimum amount to trigger (0 = all)</span>
+<span class="key">priority:</span> <span class="value">100</span>                       <span class="comment"># For conflict resolution (higher = wins)</span>
+<span class="key">triggers:</span> <span class="value">[title search complete, examination requested]</span>
+<span class="key">requires:</span> <span class="value">[title-search]</span>             <span class="comment"># Prerequisite skills that must complete first</span>
+<span class="key">conflicts-with:</span> <span class="value">[]</span>                 <span class="comment"># Skills that cannot co-activate</span></div>
+
+        <!-- ============================================ -->
+        <!-- CROSS-SKILL CONFLICT RESOLUTION               -->
+        <!-- ============================================ -->
+        <h2>Cross-Skill Conflict Resolution</h2>
+        <p>When multiple skills match a context (e.g., a FL high-value commercial transaction triggers both "state-specific-requirements" AND "high-value-transaction-rules" AND "commercial-underwriting"), the system needs deterministic precedence. This is especially critical in a regulated industry where conflicting rules could produce compliance violations.</p>
+
+        <h3>Resolution Strategy</h3>
+        <ol>
+            <li><strong>Explicit Priority</strong> &mdash; Each skill declares a numeric priority in metadata. Higher priority wins when skills conflict. Compliance skills always have highest priority.</li>
+            <li><strong>Specificity Ranking</strong> &mdash; More specific skills take precedence over general ones. A FL-specific title examination rule overrides a national default. Specificity is determined by: state-scoped > national, transaction-type-scoped > general, amount-threshold-scoped > all.</li>
+            <li><strong>Composability by Default</strong> &mdash; Most skills are not in conflict &mdash; they compose. The title chain examination skill AND the state-specific requirements skill both activate and their instructions merge. Conflict only applies when skills produce contradictory instructions.</li>
+            <li><strong>Explicit Conflict Declaration</strong> &mdash; Skills can declare <code>conflicts-with</code> in metadata, explicitly naming skills that cannot co-activate. When detected, the higher-priority skill wins.</li>
+            <li><strong>Human Escalation</strong> &mdash; Unresolvable conflicts (equal priority, no explicit declaration) escalate to a human reviewer. In a regulated domain, this is a feature, not a bug.</li>
+        </ol>
+
+        <!-- ============================================ -->
+        <!-- SKILL GOVERNANCE & LIFECYCLE                  -->
+        <!-- ============================================ -->
+        <h2>Skill Governance &amp; Lifecycle</h2>
+        <p>Skills degrade exactly like documentation &mdash; they start clean and become stale. In a regulated domain like title insurance, stale business rules are a compliance liability. The architecture requires a formal skill lifecycle:</p>
+
+        <div class="governance-grid">
+            <div class="governance-item">
+                <h4>Versioning</h4>
+                <p>Every skill has a semantic version. Changes go through review before activation. Previous versions are retained for audit trails. Rollback is instant.</p>
+            </div>
+            <div class="governance-item">
+                <h4>Ownership</h4>
+                <p>Each skill has a declared owner (team or individual). Owners are accountable for accuracy, updates, and deprecation decisions.</p>
+            </div>
+            <div class="governance-item">
+                <h4>Testing</h4>
+                <p>Each skill includes test cases: given this context, the agent should produce this outcome. Tests run on every skill change and on a scheduled cadence.</p>
+            </div>
+            <div class="governance-item">
+                <h4>Deprecation</h4>
+                <p>Skills have lifecycle states: <code>draft</code> &rarr; <code>active</code> &rarr; <code>deprecated</code> &rarr; <code>retired</code>. Deprecated skills emit warnings. Retired skills are removed from the registry.</p>
+            </div>
+            <div class="governance-item">
+                <h4>Freshness Monitoring</h4>
+                <p>Automated checks for skill rot: skills not updated in N months, skills with failing tests, skills referencing deprecated MCP servers or removed data sources.</p>
+            </div>
+            <div class="governance-item">
+                <h4>Approval Workflow</h4>
+                <p>Skill changes in regulated categories (compliance, underwriting) require multi-party approval before going active. Changes in lower-risk categories can self-serve with review.</p>
+            </div>
+        </div>
+
+        <h3>Skill Testing</h3>
+        <p>Each skill in the registry includes a <code>tests/</code> directory with scenario-based test cases. A test case is a structured definition of: input context, expected skill activation, expected agent behavior, and pass/fail criteria.</p>
+        <div class="skill-example"><span class="heading"># Test: Clean Title Chain (title/examination)</span>
+
+<span class="key">input_context:</span>
+  <span class="value">property: 123 Main St, Orlando, FL</span>
+  <span class="value">chain_years: 65</span>
+  <span class="value">gaps: none</span>
+  <span class="value">liens: none</span>
+
+<span class="key">expected_skill:</span> <span class="value">title-chain-examination</span>
+<span class="key">expected_outcome:</span> <span class="value">approve</span>
+<span class="key">expected_behavior:</span>
+  <span class="value">- Must verify chain back 60+ years</span>
+  <span class="value">- Must check tax assessor records</span>
+  <span class="value">- Must not escalate (clean chain)</span>
+  <span class="value">- Must cite recording references</span>
+
+<span class="heading"># Test: Gap Detected</span>
+
+<span class="key">input_context:</span>
+  <span class="value">property: 456 Oak Ave, Tampa, FL</span>
+  <span class="value">chain_years: 62</span>
+  <span class="value">gaps: [{from: "2003-06", to: "2004-02", days: 245}]</span>
+
+<span class="key">expected_skill:</span> <span class="value">title-chain-examination</span>
+<span class="key">expected_outcome:</span> <span class="value">flag_and_escalate</span>
+<span class="key">expected_behavior:</span>
+  <span class="value">- Must identify 245-day gap (exceeds 30-day threshold)</span>
+  <span class="value">- Must escalate to human examiner</span>
+  <span class="value">- Must NOT approve chain</span></div>
 
         <!-- ============================================ -->
         <!-- ARCHITECTURE                                  -->
@@ -148,12 +493,12 @@
 
         <div class="skills-grid">
             <div class="skill-group">
-                <h4>Knowledge Store</h4>
-                <p>Business rules, policies, domain logic stored as natural language. The LLM retrieves these to know <em>what</em> to do.</p>
+                <h4>Skill Registry (was: Knowledge Store)</h4>
+                <p>Business rules as Agent Skills with progressive disclosure. The LLM discovers, loads, and executes these to know <em>what</em> to do. Version-controlled, governed, testable.</p>
             </div>
             <div class="skill-group">
                 <h4>Workflow Store</h4>
-                <p>Execution state, agent traces, step-by-step audit trails. Tracks <em>how</em> things are being done.</p>
+                <p>Execution state, agent traces, step-by-step audit trails. Tracks <em>how</em> things are being done. Skill activation logs, conflict resolution records.</p>
             </div>
             <div class="skill-group">
                 <h4>Transaction Store</h4>
@@ -173,44 +518,160 @@
         <div class="diagram">
 Request arrives (from Gen UI, agents, or other systems)<br>
 <br>
-┌─ Query Understanding ─────────────────────────────────────┐<br>
-│  Classify: CRUD operation? Workflow? Search? Agent action? │<br>
-└─────────────────────────┬─────────────────────────────────┘<br>
-                          │<br>
-                          ▼<br>
-┌─ Retrieve Relevant Business Logic ────────────────────────┐<br>
-│  From knowledge stores: which rules apply?                 │<br>
-│  Which workflows are relevant? What domain context?        │<br>
-└─────────────────────────┬─────────────────────────────────┘<br>
-                          │<br>
-                          ▼<br>
-┌─ LLM Reasoning (Plan-Act-Reflect) ────────────────────────┐<br>
-│                                                            │<br>
-│  PLAN:    Based on retrieved rules, what steps?            │<br>
-│  ACT:     Execute via MCP &mdash; SQL, APIs, retrieval,   │<br>
-│           document ops, agent actions                      │<br>
-│  REFLECT: Sufficient? If confused, re-query stores         │<br>
-│           for more context and revise the plan             │<br>
-│                                                            │<br>
-│  ┌──────────────────────────────────────────────────┐     │<br>
-│  │  Guardrails &amp; Evals at every step              │     │<br>
-│  │  Deterministic: validation, compliance, calcs    │     │<br>
-│  │  Non-deterministic: LLM reasoning, edge cases    │     │<br>
-│  └──────────────────────────────────────────────────┘     │<br>
-└─────────────────────────┬─────────────────────────────────┘<br>
-                          │<br>
-                          ▼<br>
-┌─ Execute Operations ──────────────────────────────────────┐<br>
-│  C &mdash; Create records (transactions, documents)       │<br>
-│  R &mdash; Read / Search (~10% of system)                 │<br>
-│  U &mdash; Update records, trigger workflows              │<br>
-│  D &mdash; Delete with audit trail                        │<br>
-│  All via MCP to underlying stores                         │<br>
-└─────────────────────────┬─────────────────────────────────┘<br>
-                          │<br>
-                          ▼<br>
+&#9484;&#9472; Query Understanding &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
+&#9474;  Classify: CRUD operation? Workflow? Search? Agent action? &#9474;<br>
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
+                          &#9474;<br>
+                          &#9660;<br>
+&#9484;&#9472; Skill Discovery (Two-Phase) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
+&#9474;  Phase 1: Categorical pre-filter (state, type, amount) &#9474;<br>
+&#9474;  Phase 2: Semantic match within narrowed set            &#9474;<br>
+&#9474;  Conflict resolution: priority + specificity ranking    &#9474;<br>
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
+                          &#9474;<br>
+                          &#9660;<br>
+&#9484;&#9472; Load Activated Skills (Progressive Disclosure) &#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
+&#9474;  Level 2: Full instructions for matched skills          &#9474;<br>
+&#9474;  Level 3: MCP connections, references, templates         &#9474;<br>
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
+                          &#9474;<br>
+                          &#9660;<br>
+&#9484;&#9472; LLM Reasoning (Plan-Act-Reflect) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
+&#9474;                                                            &#9474;<br>
+&#9474;  PLAN:    Based on loaded skill instructions, what steps? &#9474;<br>
+&#9474;  ACT:     Execute via MCP &mdash; SQL, APIs, retrieval,   &#9474;<br>
+&#9474;           document ops, agent actions                      &#9474;<br>
+&#9474;  REFLECT: Sufficient? If confused, re-query skill registry&#9474;<br>
+&#9474;           for more context and revise the plan             &#9474;<br>
+&#9474;                                                            &#9474;<br>
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9474;<br>
+&#9474;  &#9474;  Guardrails &amp; Evals at every step              &#9474;     &#9474;<br>
+&#9474;  &#9474;  Deterministic: validation, compliance, calcs    &#9474;     &#9474;<br>
+&#9474;  &#9474;  Non-deterministic: LLM reasoning, edge cases    &#9474;     &#9474;<br>
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;<br>
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
+                          &#9474;<br>
+                          &#9660;<br>
+&#9484;&#9472; Execute Operations &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
+&#9474;  C &mdash; Create records (transactions, documents)       &#9474;<br>
+&#9474;  R &mdash; Read / Search (~10% of system)                 &#9474;<br>
+&#9474;  U &mdash; Update records, trigger workflows              &#9474;<br>
+&#9474;  D &mdash; Delete with audit trail                        &#9474;<br>
+&#9474;  All via MCP to underlying stores                         &#9474;<br>
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
+                          &#9474;<br>
+                          &#9660;<br>
              Serve to: Gen UI | Agents | Other Systems
         </div>
+
+        <!-- ============================================ -->
+        <!-- THREE-TIER DELEGATION MODEL                   -->
+        <!-- ============================================ -->
+        <h2>Three-Tier Delegation Model</h2>
+        <p>Inspired by production patterns in Claude Code, the Claude Agent SDK, and enterprise multi-agent frameworks (LangGraph, Semantic Kernel), the system uses three tiers of delegation. Each tier trades token cost for coordination capability:</p>
+
+        <div class="tier-grid">
+            <div class="tier-box">
+                <h4>Tier 1: Atomic Tools (MCP)</h4>
+                <div class="tier-subtitle">Stateless &bull; Permission-controlled &bull; Fast</div>
+                <ul>
+                    <li>Database queries (SQL Server)</li>
+                    <li>Document retrieval &amp; storage</li>
+                    <li>API calls to external systems</li>
+                    <li>Financial calculations</li>
+                    <li>Schema validation</li>
+                </ul>
+                <p style="margin-top: 8px; font-size: 0.82rem; color: var(--text-secondary);">Every tool is an MCP server with typed inputs/outputs and permission rules.</p>
+            </div>
+            <div class="tier-box">
+                <h4>Tier 2: Specialized Agents (Subagents)</h4>
+                <div class="tier-subtitle">Isolated context &bull; Preloaded skills &bull; Tool-restricted</div>
+                <ul>
+                    <li>Title Examination Agent (skills: chain exam, defect ID)</li>
+                    <li>Closing Agent (skills: coordination, disbursement)</li>
+                    <li>Underwriting Agent (skills: risk scoring, exceptions)</li>
+                    <li>Document Processing Agent (skills: extraction, classification)</li>
+                    <li>Compliance Agent (skills: RESPA/TRID, state regs)</li>
+                </ul>
+                <p style="margin-top: 8px; font-size: 0.82rem; color: var(--text-secondary);">Each agent runs in its own context with only the skills and tools it needs. Cannot spawn other agents (prevents runaway delegation).</p>
+            </div>
+            <div class="tier-box">
+                <h4>Tier 3: Orchestrated Workflows</h4>
+                <div class="tier-subtitle">Cross-functional &bull; PAR loop &bull; Shared state</div>
+                <ul>
+                    <li>End-to-end closing process (title + closing + compliance + lender)</li>
+                    <li>Complex underwriting with multiple agent consultations</li>
+                    <li>Exception resolution requiring human-in-the-loop</li>
+                </ul>
+                <p style="margin-top: 8px; font-size: 0.82rem; color: var(--text-secondary);">The orchestrator delegates to Tier 2 agents, tracks workflow state, handles inter-agent dependencies, and enforces the trust boundary at every step.</p>
+            </div>
+        </div>
+
+        <h3>Delegation Constraint: No Recursive Spawning</h3>
+        <p>A deliberate design constraint: Tier 2 agents cannot spawn other Tier 2 agents. This is borrowed from Claude Code's architecture and prevents runaway delegation chains that are impossible to debug or audit. If a title examination agent needs underwriting input, it returns a result to the orchestrator, which then separately delegates to the underwriting agent. The orchestrator always maintains the full picture.</p>
+
+        <!-- ============================================ -->
+        <!-- AGENT PROTOCOL STACK                          -->
+        <!-- ============================================ -->
+        <h2>Agent Protocol Stack</h2>
+        <p>The 2026 agent ecosystem has converged on three complementary layers. This architecture adopts all three at different maturity levels:</p>
+
+        <div class="layer-stack">
+            <div class="layer-stack-item">
+                <div class="layer-label">Capability Packaging</div>
+                <div class="layer-protocol">Skills</div>
+                <div class="layer-desc">Business logic as discoverable, loadable, executable units. The "brain" &mdash; what agents know how to do. Progressive disclosure for context efficiency. <strong>Status: core to this architecture.</strong></div>
+            </div>
+            <div class="layer-stack-item">
+                <div class="layer-label">Tool Access</div>
+                <div class="layer-protocol">MCP</div>
+                <div class="layer-desc">Agent-to-tool/data connections. The "hands" &mdash; how agents interact with databases, APIs, documents. Every data source is an MCP server. <strong>Status: already adopted, production-ready.</strong></div>
+            </div>
+            <div class="layer-stack-item">
+                <div class="layer-label">Agent Communication</div>
+                <div class="layer-protocol">A2A</div>
+                <div class="layer-desc">Agent-to-agent discovery and task delegation (Google, Linux Foundation, 150+ partners). The "voice" &mdash; how independent agents find and talk to each other. <strong>Status: future adoption. Agent Card schema borrowed now for internal registry.</strong></div>
+            </div>
+        </div>
+
+        <h3>How the Three Layers Work Together</h3>
+        <div class="diagram">
+Development Time:<br>
+  Skills (SKILL.md) &rarr; Teach agents HOW to handle title operations<br>
+<br>
+Runtime &mdash; Internal:<br>
+  MCP &rarr; Connect agents TO tools (SQL Server, doc store, county records)<br>
+<br>
+Runtime &mdash; External (Future):<br>
+  A2A &rarr; Expose agents AS services to other business units or partners<br>
+  Agent Cards &rarr; Published at well-known URIs for discovery<br>
+<br>
+Example: Title Examination<br>
+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
+1. SKILL  &rarr; title-chain-examination loaded (instructions + constraints)<br>
+2. MCP    &rarr; county-records server connected, tax-assessor connected<br>
+3. Agent executes skill instructions using MCP tools<br>
+4. Future: other BU's agent discovers this capability via A2A Agent Card
+        </div>
+
+        <h3>A2A: Why Defer, What to Borrow Now</h3>
+        <p>A2A (Agent-to-Agent Protocol) is the right standard for inter-agent communication, but v1.0 is not yet finalized. For internal orchestration, MCP + the workflow engine (PAR loop) is simpler and more mature. However, the <strong>Agent Card schema</strong> is worth borrowing today as the format for the internal agent registry:</p>
+        <div class="skill-example"><span class="comment"># Internal Agent Card (borrowing A2A schema)</span>
+<span class="key">name:</span> <span class="value">Title Examination Agent</span>
+<span class="key">description:</span> <span class="value">Examines title chains for ownership continuity and defects</span>
+<span class="key">version:</span> <span class="value">1.0</span>
+<span class="key">skills:</span>
+  <span class="value">- id: title-chain-examination</span>
+  <span class="value">  description: Examine chain of ownership</span>
+  <span class="value">  inputModes: [application/json]</span>
+  <span class="value">  outputModes: [application/json]</span>
+  <span class="value">  tags: [title, examination, chain]</span>
+  <span class="value">- id: defect-identification</span>
+  <span class="value">  description: Identify and classify title defects</span>
+<span class="key">mcp-servers:</span> <span class="value">[county-records, tax-assessor, judgment-search]</span>
+<span class="key">tier:</span> <span class="value">2</span>
+<span class="key">model:</span> <span class="value">sonnet (complex reasoning)</span></div>
+        <p>When A2A v1.0 ships, these internal cards can be exposed at <code>/.well-known/agent-card.json</code> endpoints to enable cross-business-unit or external agent discovery with minimal migration effort.</p>
 
         <!-- ============================================ -->
         <!-- TRUST BOUNDARY                                -->
@@ -224,8 +685,9 @@ Request arrives (from Gen UI, agents, or other systems)<br>
                 <div class="card-label">Neural Layer</div>
                 <p style="flex-grow: 0;">The LLM handles reasoning, planning, and ambiguity:</p>
                 <ul style="color: var(--text-secondary); font-size: 0.9rem; margin-left: 16px;">
-                    <li>Planning which business rules apply</li>
-                    <li>Reasoning over retrieved domain knowledge</li>
+                    <li>Discovering and selecting relevant skills</li>
+                    <li>Reasoning over loaded skill instructions</li>
+                    <li>Planning multi-step execution sequences</li>
                     <li>Handling edge cases and ambiguity</li>
                     <li>Deciding when to re-query for more context</li>
                     <li>Generating responses and action plans</li>
@@ -236,6 +698,8 @@ Request arrives (from Gen UI, agents, or other systems)<br>
                 <div class="card-label">Symbolic Layer</div>
                 <p style="flex-grow: 0;">Hard verification at every step:</p>
                 <ul style="color: var(--text-secondary); font-size: 0.9rem; margin-left: 16px;">
+                    <li>Categorical skill pre-filtering</li>
+                    <li>Skill conflict resolution (priority + specificity)</li>
                     <li>Data format &amp; schema validation</li>
                     <li>Financial calculations</li>
                     <li>Compliance checks (RESPA, TRID)</li>
@@ -252,10 +716,20 @@ Request arrives (from Gen UI, agents, or other systems)<br>
         <h3>Strangler Fig Pattern</h3>
         <p>The legacy monolith has thick API layers handling multiple operations per endpoint. The modernization:</p>
         <ol>
-            <li><strong>Decompose</strong> &mdash; Break monolithic APIs into microservices with clear domain boundaries</li>
-            <li><strong>Parallel Build</strong> &mdash; Existing APIs continue operating. AI-native replacements are built alongside, not as a big-bang rewrite</li>
-            <li><strong>Shadow Validate</strong> &mdash; New services run in shadow mode, comparing outputs against legacy for correctness</li>
+            <li><strong>Decompose</strong> &mdash; Break monolithic APIs into microservices with clear domain boundaries. Each domain maps to a set of skills.</li>
+            <li><strong>Parallel Build</strong> &mdash; Existing APIs continue operating. AI-native replacements (skill-driven agents) are built alongside, not as a big-bang rewrite</li>
+            <li><strong>Shadow Validate</strong> &mdash; New services run in shadow mode, comparing outputs against legacy for correctness. Skill test cases validate behavioral equivalence.</li>
             <li><strong>Gradual Cutover</strong> &mdash; Traffic shifts incrementally to AI-native services as they prove themselves</li>
+        </ol>
+
+        <h3>Migration = Skill Extraction</h3>
+        <p>Each legacy module maps to one or more skills. The migration process for each module is:</p>
+        <ol>
+            <li><strong>Extract</strong> &mdash; Document the module's business logic as natural language skill definitions</li>
+            <li><strong>Test</strong> &mdash; Create test cases that capture the module's current behavior</li>
+            <li><strong>Connect</strong> &mdash; Wrap the module's data sources as MCP servers</li>
+            <li><strong>Validate</strong> &mdash; Shadow-run the skill-driven agent against the legacy module, compare outputs</li>
+            <li><strong>Cut Over</strong> &mdash; When test pass rate meets threshold, shift traffic to the AI-native path</li>
         </ol>
 
         <!-- ============================================ -->
@@ -265,7 +739,11 @@ Request arrives (from Gen UI, agents, or other systems)<br>
         <div class="cards">
             <div class="card">
                 <h3>AI-Native, Not AI-Augmented</h3>
-                <p>The LLM is the reasoning engine, not a feature. Business logic is retrieved and reasoned over, not hardcoded.</p>
+                <p>The LLM is the reasoning engine, not a feature. Business logic is packaged as agent skills &mdash; retrieved, loaded, and executed at runtime.</p>
+            </div>
+            <div class="card">
+                <h3>Agent Skills Standard</h3>
+                <p>Business rules follow the open Agent Skills pattern (agentskills.io). Progressive disclosure, version-controlled, testable, portable across agent runtimes.</p>
             </div>
             <div class="card">
                 <h3>MCP-First Federation</h3>
@@ -280,12 +758,16 @@ Request arrives (from Gen UI, agents, or other systems)<br>
                 <p>LLM reasoning paired with deterministic verification. Every action passes through a trust boundary before execution.</p>
             </div>
             <div class="card">
+                <h3>Three-Layer Protocol Stack</h3>
+                <p>Skills (brain) + MCP (hands) + A2A-ready (voice). Aligned with the converging industry standard for agent architectures.</p>
+            </div>
+            <div class="card">
                 <h3>~800 TB Scale</h3>
-                <p>Metadata-first routing, tiered storage, and adaptive retrieval strategies. No flat vector search at this scale.</p>
+                <p>Metadata-first routing, tiered storage, hybrid skill discovery, and adaptive retrieval strategies. No flat vector search at this scale.</p>
             </div>
             <div class="card">
                 <h3>Zero-Downtime Migration</h3>
-                <p>Strangler Fig with shadow validation. Legacy APIs keep running while AI-native replacements prove themselves.</p>
+                <p>Strangler Fig with shadow validation. Legacy APIs keep running while skill-driven agents prove themselves. Migration = skill extraction.</p>
             </div>
         </div>
 
@@ -321,10 +803,13 @@ Request arrives (from Gen UI, agents, or other systems)<br>
         <h2>To Be Discussed in Future Versions</h2>
         <ul>
             <li><strong>Generative UI</strong> &mdash; The front-end experience layer. How does the Gen UI consume the backend?</li>
-            <li><strong>Specific Agent Capabilities</strong> &mdash; What can agents do beyond CRUD? Workflow automation? Cross-system orchestration?</li>
-            <li><strong>Observability &amp; Eval</strong> &mdash; How is the system monitored, evaluated, and improved?</li>
-            <li><strong>Concrete Metrics</strong> &mdash; Search latency, processing improvements, adoption numbers</li>
-            <li><strong>Technology Stack</strong> &mdash; Specific frameworks, databases, tools used</li>
+            <li><strong>Specific Agent Capabilities</strong> &mdash; Detailed capability mapping per Tier 2 agent beyond the overview above</li>
+            <li><strong>Observability &amp; Eval</strong> &mdash; How is the system monitored, evaluated, and improved? Skill performance dashboards, agent trace analysis</li>
+            <li><strong>Concrete Metrics</strong> &mdash; Search latency, processing improvements, adoption numbers, skill coverage percentage</li>
+            <li><strong>Technology Stack</strong> &mdash; Specific frameworks, databases, tools used (LangGraph vs. custom PAR, vector DB choice, etc.)</li>
+            <li><strong>Skill Authoring Tooling</strong> &mdash; How are skills written, reviewed, and published? IDE integration? Collaborative editing?</li>
+            <li><strong>Agent Memory &amp; Learning</strong> &mdash; Should agents accumulate institutional knowledge across executions? Memory architecture for agents that learn from past transactions</li>
+            <li><strong>Hierarchical Memory</strong> &mdash; Org-wide rules vs. BU-specific rules vs. agent-specific context. Path-scoped conditional loading (e.g., "when processing EU data, apply GDPR rules")</li>
         </ul>
 
         <!-- ============================================ -->
@@ -332,9 +817,10 @@ Request arrives (from Gen UI, agents, or other systems)<br>
         <!-- ============================================ -->
         <h2>My Role</h2>
         <ul>
-            <li><strong>Architect &amp; Technical Lead</strong> &mdash; Primary person who designed the system architecture, defined the multi-store strategy, and established the MCP-first integration model</li>
-            <li><strong>Hands-On Development</strong> &mdash; Building core components including the retrieval pipeline, MCP integrations, and agentic workflow orchestration</li>
-            <li><strong>Modernization Strategy</strong> &mdash; Defined the Strangler Fig migration approach for decomposing the monolith into AI-native microservices</li>
+            <li><strong>Architect &amp; Technical Lead</strong> &mdash; Primary person who designed the system architecture, defined the multi-store strategy, skill registry design, and MCP-first integration model</li>
+            <li><strong>Hands-On Development</strong> &mdash; Building core components including the retrieval pipeline, MCP integrations, skill registry, and agentic workflow orchestration</li>
+            <li><strong>Modernization Strategy</strong> &mdash; Defined the Strangler Fig migration approach and the skill extraction process for decomposing the monolith into AI-native microservices</li>
+            <li><strong>Research &amp; Standards</strong> &mdash; Evaluated and adopted 2026 agent ecosystem standards (Agent Skills, MCP, A2A) to ensure the architecture is future-proof and aligned with industry convergence</li>
         </ul>
 
         <div style="margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap;">
