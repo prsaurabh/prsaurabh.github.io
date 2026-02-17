@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI Platform — Deep Dive | Saurabh Prasad</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+    /* ============================================
+       Enterprise AI Deep Dive — Page-Specific Styles
+       Prefix: ep- (enterprise platform)
+       ============================================ */
+
+    html { scroll-behavior: smooth; }
+    [id] { scroll-margin-top: 80px; }
+
+    /* -- Hero -- */
+    .ep-hero {
+        padding: 56px 20px 40px;
+        border-bottom: 1px solid var(--bg-tertiary);
+        text-align: center;
+    }
+    .ep-hero h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+        background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .ep-hero .ep-org {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+    .ep-hero .ep-subtitle {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .ep-hero-metrics {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .ep-pill {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    .ep-pill strong {
+        color: var(--accent-blue);
+        font-weight: 700;
+        margin-right: 4px;
+    }
+
+    /* -- Two Column Layout -- */
+    .ep-layout {
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* -- Sidebar TOC -- */
+    .ep-toc {
+        position: sticky;
+        top: 72px;
+        align-self: start;
+        height: calc(100vh - 90px);
+        overflow-y: auto;
+        padding: 32px 0;
+        border-right: 1px solid var(--bg-tertiary);
+    }
+    .ep-toc-heading {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        padding: 0 16px;
+        margin-bottom: 16px;
+        font-weight: 600;
+    }
+    .ep-toc-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .ep-toc-list li { margin: 0; }
+    .ep-toc-link {
+        display: block;
+        padding: 7px 16px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        border-left: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+    }
+    .ep-toc-link:hover {
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+    .ep-toc-link.active {
+        color: var(--accent-blue);
+        border-left-color: var(--accent-blue);
+    }
+    .ep-toc-toggle-input { display: none; }
+    .ep-toc-toggle-btn { display: none; }
+
+    /* -- Main Content -- */
+    .ep-main {
+        padding: 32px 0 64px 44px;
+        min-width: 0;
+    }
+
+    /* -- Chapter Markers -- */
+    .ep-chapter {
+        padding: 48px 0 0;
+        margin-top: 48px;
+        border-top: 1px solid var(--bg-tertiary);
+    }
+    .ep-chapter:first-of-type {
+        margin-top: 0;
+        border-top: none;
+        padding-top: 0;
+    }
+    .ep-chapter-num {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+        letter-spacing: 2px;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        margin-bottom: 6px;
+    }
+    .ep-chapter-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+        border: none;
+        padding: 0;
+    }
+    .ep-chapter-desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+
+    /* -- Prose -- */
+    .ep-main p {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        line-height: 1.75;
+    }
+    .ep-main strong { color: var(--text-primary); }
+    .ep-main h3 {
+        font-size: 1.1rem;
+        color: var(--accent-blue);
+        margin: 28px 0 10px;
+    }
+
+    /* -- Stats Grid -- */
+    .ep-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin: 24px 0;
+    }
+    .ep-stat {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 18px;
+        text-align: center;
+    }
+    .ep-stat-num {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+    }
+    .ep-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+    }
+
+    /* -- Architecture Layers -- */
+    .ep-arch {
+        margin: 24px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .ep-arch-layer {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 16px 20px;
+        position: relative;
+    }
+    .ep-arch-layer.core {
+        border-color: var(--accent-blue);
+        border-width: 1px;
+    }
+    .ep-arch-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--accent-blue);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .ep-arch-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .ep-arch-item {
+        background: var(--bg-tertiary);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .ep-arch-item strong { color: var(--text-primary); font-weight: 600; }
+    .ep-arch-connector {
+        text-align: center;
+        color: var(--accent-blue);
+        font-size: 0.9rem;
+        line-height: 1;
+        padding: 2px 0;
+    }
+
+    /* -- Pipeline Steps -- */
+    .ep-pipeline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 20px 0;
+        overflow-x: auto;
+        padding: 8px 0;
+    }
+    .ep-step {
+        flex: 0 0 auto;
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 14px 18px;
+        text-align: center;
+        min-width: 120px;
+    }
+    .ep-step-num {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+        background: #1a2332;
+        width: 22px; height: 22px; line-height: 22px;
+        border-radius: 50%;
+        margin: 0 auto 6px;
+    }
+    .ep-step h4 {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        margin: 0 0 3px;
+    }
+    .ep-step p {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+    .ep-arrow {
+        color: var(--accent-blue);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    /* -- Callout -- */
+    .ep-callout {
+        background: #1a2332;
+        border: 1px solid #1f3a5f;
+        border-left: 3px solid var(--accent-blue);
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin: 16px 0;
+        font-size: 0.85rem;
+    }
+    .ep-callout code {
+        background: var(--bg-tertiary);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        color: var(--accent-green);
+    }
+    .ep-callout.orange {
+        border-left-color: var(--accent-orange);
+    }
+    .ep-callout.purple {
+        border-left-color: var(--accent-purple);
+    }
+    .ep-callout.green {
+        border-left-color: var(--accent-green);
+    }
+
+    /* -- Accordions -- */
+    .ep-module {
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: var(--bg-secondary);
+        overflow: hidden;
+    }
+    .ep-module summary {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        cursor: pointer;
+        list-style: none;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .ep-module summary::-webkit-details-marker { display: none; }
+    .ep-module summary::before {
+        content: '\25B6';
+        font-size: 0.6rem;
+        color: var(--text-secondary);
+        margin-right: 12px;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+    }
+    .ep-module[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    .ep-module-tech {
+        font-size: 0.7rem;
+        color: var(--accent-blue);
+        background: #1a2332;
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    .ep-module-body {
+        padding: 0 18px 18px;
+        border-top: 1px solid var(--bg-tertiary);
+    }
+    .ep-module-body p {
+        font-size: 0.85rem;
+        margin: 12px 0 0;
+    }
+    .ep-module-body ul {
+        margin: 8px 0 0 18px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    .ep-module-body li { margin-bottom: 4px; }
+    .ep-group-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin: 28px 0 10px;
+        font-weight: 600;
+    }
+
+    /* -- Tech Stack Grid -- */
+    .ep-tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+    }
+    .ep-tech-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 18px;
+    }
+    .ep-tech-card h4 {
+        font-size: 0.78rem;
+        color: var(--accent-blue);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0 0 6px;
+    }
+    .ep-tech-card p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* -- Product Cards -- */
+    .ep-products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+    }
+    .ep-product {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 10px;
+        padding: 24px;
+        transition: border-color 0.2s;
+    }
+    .ep-product:hover { border-color: var(--accent-blue); }
+    .ep-product h4 {
+        font-size: 1rem;
+        color: var(--text-primary);
+        margin: 0 0 4px;
+    }
+    .ep-product .ep-award {
+        font-size: 0.75rem;
+        color: var(--accent-orange);
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .ep-product p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* -- Comparison Table -- */
+    .ep-table-wrap {
+        overflow-x: auto;
+        margin: 16px 0;
+    }
+    .ep-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .ep-table th {
+        text-align: left;
+        padding: 10px 14px;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .ep-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--bg-tertiary);
+        color: var(--text-secondary);
+    }
+    .ep-table tr:last-child td { border-bottom: none; }
+
+    /* -- Timeline -- */
+    .ep-timeline {
+        margin: 24px 0;
+        padding-left: 20px;
+        border-left: 2px solid var(--bg-tertiary);
+    }
+    .ep-timeline-item {
+        padding: 0 0 28px 20px;
+        position: relative;
+    }
+    .ep-timeline-item:last-child { padding-bottom: 0; }
+    .ep-timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -27px;
+        top: 6px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        border: 2px solid var(--bg-primary);
+    }
+    .ep-timeline-phase {
+        font-size: 0.75rem;
+        color: var(--accent-blue);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .ep-timeline-title {
+        font-size: 1rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin: 4px 0;
+    }
+    .ep-timeline-desc {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.65;
+    }
+
+    /* -- Responsive -- */
+    @media (max-width: 900px) {
+        .ep-layout {
+            grid-template-columns: 1fr;
+        }
+        .ep-toc {
+            position: relative;
+            top: auto;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid var(--bg-tertiary);
+            max-height: 0;
+            overflow: hidden;
+            padding: 0;
+            transition: max-height 0.3s ease-out;
+        }
+        .ep-toc-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin: 24px 20px 0;
+        }
+        .ep-toc-toggle-input:checked ~ .ep-toc {
+            max-height: 600px;
+            padding: 16px 0;
+        }
+        .ep-main { padding-left: 0; padding: 24px 0 48px; }
+        .ep-layout { padding: 0 16px; }
+        .ep-pipeline { flex-direction: column; }
+        .ep-arrow { transform: rotate(90deg); }
+        .ep-step { width: 100%; }
+        .ep-arch-items { gap: 6px; }
+    }
+    @media (max-width: 600px) {
+        .ep-hero h1 { font-size: 1.6rem; }
+        .ep-stats { grid-template-columns: repeat(2, 1fr); }
+        .ep-tech-grid { grid-template-columns: 1fr; }
+        .ep-products { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="../index.html" class="nav-brand">SP</a>
+    <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../projects.html">Projects</a>
+        <a href="../articles.html">Articles</a>
+        <a href="../experience.html">Experience</a>
+    </div>
+</nav>
+
+<!-- ======== Hero ======== -->
+<div class="ep-hero">
+    <h1>Enterprise AI Foundational Service</h1>
+    <p class="ep-org">Anywhere Real Estate &middot; Senior Staff Software Engineer &middot; 2023 &ndash; Present</p>
+    <p class="ep-subtitle">The centralized operating system for how an entire organization consumes Generative AI</p>
+    <div class="ep-hero-metrics">
+        <span class="ep-pill"><strong>23</strong> Active Applications</span>
+        <span class="ep-pill"><strong>8+</strong> Product Teams</span>
+        <span class="ep-pill"><strong>40%</strong> Less Integration Overhead</span>
+        <span class="ep-pill"><strong>2</strong> Industry Awards</span>
+        <span class="ep-pill"><strong>35%</strong> Infrastructure Cost Cut</span>
+    </div>
+</div>
+
+<!-- ======== Mobile TOC Toggle ======== -->
+<input type="checkbox" id="toc-toggle" class="ep-toc-toggle-input">
+<label for="toc-toggle" class="ep-toc-toggle-btn">&#9776; Table of Contents</label>
+
+<!-- ======== Layout Grid ======== -->
+<div class="ep-layout">
+
+    <!-- Sidebar TOC -->
+    <aside class="ep-toc">
+        <div class="ep-toc-heading">On This Page</div>
+        <ul class="ep-toc-list">
+            <li><a href="#overview" class="ep-toc-link">Overview</a></li>
+            <li><a href="#architecture" class="ep-toc-link">Architecture</a></li>
+            <li><a href="#platform-core" class="ep-toc-link">Platform Core</a></li>
+            <li><a href="#rag-service" class="ep-toc-link">RAG-as-a-Service</a></li>
+            <li><a href="#agents-mcp" class="ep-toc-link">Agents &amp; MCP</a></li>
+            <li><a href="#guardrails" class="ep-toc-link">Guardrails</a></li>
+            <li><a href="#observability" class="ep-toc-link">Observability</a></li>
+            <li><a href="#products" class="ep-toc-link">Products Built</a></li>
+            <li><a href="#tech-stack" class="ep-toc-link">Tech Stack</a></li>
+            <li><a href="#evolution" class="ep-toc-link">Evolution</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ep-main">
+
+        <!-- ======== 01 Overview ======== -->
+        <div class="ep-chapter" id="overview">
+            <div class="ep-chapter-num">01</div>
+            <h2 class="ep-chapter-title">Overview</h2>
+            <p class="ep-chapter-desc">What this platform does and why it exists</p>
+        </div>
+
+        <p>Anywhere Real Estate operates multiple business lines that merged recently &mdash; title &amp; settlement, franchising, brokerage, relocation, and mortgage services. Each group maintains distinct tech stacks and operating mechanisms. As AI adoption accelerated, teams were independently integrating with vendors, creating fragmented, ungoverned implementations.</p>
+
+        <p>The <strong>Enterprise AI Foundational Service</strong> replaced that fragmentation with a unified, governed platform and standardized integration model. It serves as intelligent middleware between applications and AI providers (AWS Bedrock, Azure OpenAI), offering capabilities via <strong>REST API</strong>, <strong>SDK</strong> (npm, NuGet, PyPI), and <strong>MCP servers</strong>. Product teams can independently build, deploy, and operate RAG systems, agents, and AI workflows without navigating complex infrastructure or security hurdles.</p>
+
+        <p>Got involved early and built both the platform and the team over time. Drove enterprise AI adoption through events, articles, and hackathons.</p>
+
+        <div class="ep-stats">
+            <div class="ep-stat">
+                <div class="ep-stat-num">23</div>
+                <div class="ep-stat-label">Active Applications</div>
+            </div>
+            <div class="ep-stat">
+                <div class="ep-stat-num">8+</div>
+                <div class="ep-stat-label">Product Teams</div>
+            </div>
+            <div class="ep-stat">
+                <div class="ep-stat-num">40%</div>
+                <div class="ep-stat-label">Integration Overhead Reduced</div>
+            </div>
+            <div class="ep-stat">
+                <div class="ep-stat-num">50%</div>
+                <div class="ep-stat-label">Faster Development Cycles</div>
+            </div>
+            <div class="ep-stat">
+                <div class="ep-stat-num">35%</div>
+                <div class="ep-stat-label">Infrastructure Cost Cut</div>
+            </div>
+            <div class="ep-stat">
+                <div class="ep-stat-num">5</div>
+                <div class="ep-stat-label">Business Units Served</div>
+            </div>
+        </div>
+
+        <!-- ======== 02 Architecture ======== -->
+        <div class="ep-chapter" id="architecture">
+            <div class="ep-chapter-num">02</div>
+            <h2 class="ep-chapter-title">Platform Architecture</h2>
+            <p class="ep-chapter-desc">Layered design from consumers to providers</p>
+        </div>
+
+        <p>The architecture is organized in horizontal layers. Applications across business units consume the platform through a unified access layer, which routes to core capabilities, higher-order service offerings, and underlying model providers.</p>
+
+        <div class="ep-arch">
+            <div class="ep-arch-layer">
+                <div class="ep-arch-label">Consumers</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item"><strong>Title &amp; Settlement</strong></span>
+                    <span class="ep-arch-item"><strong>Brokerage</strong></span>
+                    <span class="ep-arch-item"><strong>Relocation</strong></span>
+                    <span class="ep-arch-item"><strong>Mortgage</strong></span>
+                    <span class="ep-arch-item"><strong>Franchising</strong></span>
+                </div>
+            </div>
+            <div class="ep-arch-connector">&darr;</div>
+            <div class="ep-arch-layer">
+                <div class="ep-arch-label">Consumption Layer</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item"><strong>REST API</strong></span>
+                    <span class="ep-arch-item"><strong>SDK</strong> &mdash; npm, NuGet, PyPI</span>
+                    <span class="ep-arch-item"><strong>MCP Servers</strong></span>
+                    <span class="ep-arch-item"><strong>Pipeline Builder UI</strong></span>
+                </div>
+            </div>
+            <div class="ep-arch-connector">&darr;</div>
+            <div class="ep-arch-layer core">
+                <div class="ep-arch-label">Platform Core</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item">Prompt Management</span>
+                    <span class="ep-arch-item">Memory Management</span>
+                    <span class="ep-arch-item">Model Abstraction &amp; Routing</span>
+                    <span class="ep-arch-item">Cost Optimization</span>
+                    <span class="ep-arch-item">Custom Guardrails</span>
+                    <span class="ep-arch-item">Observability</span>
+                </div>
+            </div>
+            <div class="ep-arch-connector">&darr;</div>
+            <div class="ep-arch-layer">
+                <div class="ep-arch-label">Service Offerings</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item"><strong>RAG-as-a-Service</strong></span>
+                    <span class="ep-arch-item"><strong>Agent Marketplace</strong></span>
+                    <span class="ep-arch-item"><strong>Multi-Agent Orchestration</strong></span>
+                    <span class="ep-arch-item"><strong>MCP Registry</strong></span>
+                </div>
+            </div>
+            <div class="ep-arch-connector">&darr;</div>
+            <div class="ep-arch-layer">
+                <div class="ep-arch-label">Administration &amp; Compliance</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item">Access Control &amp; SSO</span>
+                    <span class="ep-arch-item">Audit Trail</span>
+                    <span class="ep-arch-item">HIPAA / GDPR / SB 1047</span>
+                    <span class="ep-arch-item">Reporting &amp; Analytics</span>
+                </div>
+            </div>
+            <div class="ep-arch-connector">&darr;</div>
+            <div class="ep-arch-layer">
+                <div class="ep-arch-label">LLM Providers</div>
+                <div class="ep-arch-items">
+                    <span class="ep-arch-item"><strong>AWS Bedrock</strong></span>
+                    <span class="ep-arch-item"><strong>Azure OpenAI</strong></span>
+                    <span class="ep-arch-item"><strong>Local / Open-Source Models</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======== 03 Platform Core ======== -->
+        <div class="ep-chapter" id="platform-core">
+            <div class="ep-chapter-num">03</div>
+            <h2 class="ep-chapter-title">Platform Core</h2>
+            <p class="ep-chapter-desc">Model routing, prompt management, memory, and cost optimization</p>
+        </div>
+
+        <div class="ep-group-label">Model Access &amp; Routing</div>
+
+        <details class="ep-module" name="core" open>
+            <summary><span>Dynamic Model Routing</span> <span class="ep-module-tech">Multi-Cloud</span></summary>
+            <div class="ep-module-body">
+                <p>Intelligently routes requests to optimal models based on task requirements, cost, and performance metrics. The unified API normalizes differences between AWS Bedrock, Azure OpenAI, and open-source models &mdash; switching providers requires only changing a model identifier.</p>
+                <ul>
+                    <li><strong>Provider abstraction</strong> &mdash; single interface across Claude, Llama, Mistral, Titan, Cohere</li>
+                    <li><strong>High-availability failover</strong> &mdash; automatic rerouting when a provider degrades</li>
+                    <li><strong>A/B testing</strong> &mdash; controlled rollout of new models with benchmarking against existing ones</li>
+                    <li><strong>Local model fallbacks</strong> &mdash; reduces cloud dependency for suitable workloads</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="ep-module" name="core">
+            <summary><span>Prompt &amp; Configuration Management</span> <span class="ep-module-tech">Versioned</span></summary>
+            <div class="ep-module-body">
+                <p>A centralized, governance-controlled repository of versioned, structured prompts with support for chaining, caching, and A/B testing. Modifying the system instruction no longer requires new deployments.</p>
+                <ul>
+                    <li><strong>Prompt library</strong> &mdash; versioning, templates, chaining, caching</li>
+                    <li><strong>Safety settings</strong> &mdash; guardrails, ethics, hallucination prevention (grounding)</li>
+                    <li><strong>Per-LLM prompt settings</strong> &mdash; different system instructions optimized for each model</li>
+                    <li><strong>Self-service administration</strong> &mdash; Admin, Editor, Viewer roles</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="ep-module" name="core">
+            <summary><span>Memory Management</span> <span class="ep-module-tech">Context-Aware</span></summary>
+            <div class="ep-module-body">
+                <p>Intelligently compresses and reuses chat history within context windows, reducing unnecessary token usage. Retains user interaction history for long-term AI memory across multi-turn conversations.</p>
+            </div>
+        </details>
+
+        <details class="ep-module" name="core">
+            <summary><span>Dynamic KV Cache Tuning</span> <span class="ep-module-tech">Agent Module</span></summary>
+            <div class="ep-module-body">
+                <p>The platform allows dynamic LLM selection, and an agent module optimizes context utilization per model:</p>
+                <ul>
+                    <li>Identifies the <strong>tokenizer</strong> used by the selected model (tiktoken, sentencepiece, etc.)</li>
+                    <li>Fetches the model's <strong>token limit</strong> (8K, 32K, 128K)</li>
+                    <li>Adjusts <strong>chunk size, overlap, and strategy</strong> accordingly</li>
+                    <li>Tunes <strong>retrieval parameters</strong> (top-k, score threshold) to fit tighter or looser contexts</li>
+                    <li>Optionally switches <strong>ensemble methods</strong> (hybrid, rerank, multi-query) based on model cost vs quality</li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="ep-group-label">Cost Optimization</div>
+
+        <details class="ep-module" name="core">
+            <summary><span>Cost Controls &amp; Efficiency</span> <span class="ep-module-tech">Caching + Limiting</span></summary>
+            <div class="ep-module-body">
+                <ul>
+                    <li><strong>Semantic caching</strong> &mdash; caches frequently queried AI responses to reduce API calls and latency</li>
+                    <li><strong>Intelligent rate limiting</strong> &mdash; dynamically scales down non-critical requests to prevent excessive token burn</li>
+                    <li><strong>Batch processing &amp; parallel execution</strong> &mdash; aggregates requests into concurrent processing pipelines</li>
+                    <li><strong>Token-by-token streaming</strong> &mdash; optimized for real-time interactions with minimal delay</li>
+                    <li><strong>LLM comparison &amp; pricing tools</strong> &mdash; admin dashboard for cost comparisons and usage reports</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- ======== 04 RAG-as-a-Service ======== -->
+        <div class="ep-chapter" id="rag-service">
+            <div class="ep-chapter-num">04</div>
+            <h2 class="ep-chapter-title">RAG-as-a-Service</h2>
+            <p class="ep-chapter-desc">Decomposed, agent-based retrieval-augmented generation pipeline</p>
+        </div>
+
+        <p>Like other platform services, RAG is offered via REST API, SDK, MCP, and a <strong>pipeline builder UI</strong> with prebuilt templates. As the system evolved to support more advanced functionalities and larger data volumes, it was decomposed into agents and services with separation of concerns for improved scalability.</p>
+
+        <div class="ep-pipeline">
+            <div class="ep-step"><div class="ep-step-num">1</div><h4>Classify</h4><p>Query Classifier<br>&amp; Expander</p></div>
+            <div class="ep-arrow">&rarr;</div>
+            <div class="ep-step"><div class="ep-step-num">2</div><h4>Retrieve</h4><p>Hybrid: Vector +<br>Keyword + Graph</p></div>
+            <div class="ep-arrow">&rarr;</div>
+            <div class="ep-step"><div class="ep-step-num">3</div><h4>Grade</h4><p>Score &amp; filter<br>Top-k selection</p></div>
+            <div class="ep-arrow">&rarr;</div>
+            <div class="ep-step"><div class="ep-step-num">4</div><h4>Build</h4><p>Context budgeting<br>&amp; deduplication</p></div>
+            <div class="ep-arrow">&rarr;</div>
+            <div class="ep-step"><div class="ep-step-num">5</div><h4>Generate</h4><p>LLM + prompt<br>variants</p></div>
+            <div class="ep-arrow">&rarr;</div>
+            <div class="ep-step"><div class="ep-step-num">6</div><h4>Validate</h4><p>Hallucination &amp;<br>quality checks</p></div>
+        </div>
+
+        <div class="ep-callout">
+            <strong>Self-Correction Loop:</strong> A <code>Self-Reflection Agent</code> auto-rewrites or regenerates answers if quality is low. A <code>Fallback Handler</code> triggers web search or alternate paths on failure. <code>Audit + Logging</code> tracks inputs, outputs, and errors continuously.
+        </div>
+
+        <div class="ep-table-wrap">
+            <table class="ep-table">
+                <thead>
+                    <tr><th>Component</th><th>Responsibility</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Query Classifier &amp; Expander</strong></td><td>Routes to internal or external knowledge; rewrites and grounds queries based on classifications</td></tr>
+                    <tr><td><strong>Retriever</strong></td><td>Vector, keyword, and graph-based hybrid retrieval</td></tr>
+                    <tr><td><strong>Grader</strong></td><td>Scores and filters retrieved chunks with top-k selection</td></tr>
+                    <tr><td><strong>Context Builder</strong></td><td>Budget management, deduplication, formatting for model context windows</td></tr>
+                    <tr><td><strong>Answer Generator</strong></td><td>LLM generation with prompt variants and streaming support</td></tr>
+                    <tr><td><strong>Evaluator &amp; Validator</strong></td><td>LLM-based quality checks: hallucination, tone, domain rules (e.g., must cite sources)</td></tr>
+                    <tr><td><strong>Self-Reflection Agent</strong></td><td>Auto-rewrites if quality is low; triggers regeneration</td></tr>
+                    <tr><td><strong>Fallback Handler</strong></td><td>Web search or alternate retrieval paths on failure</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ======== 05 Agent Marketplace & MCP ======== -->
+        <div class="ep-chapter" id="agents-mcp">
+            <div class="ep-chapter-num">05</div>
+            <h2 class="ep-chapter-title">Agent Marketplace &amp; MCP</h2>
+            <p class="ep-chapter-desc">Reusable agents as services with dynamic discovery</p>
+        </div>
+
+        <p>Inspired by <strong>Agent.ai</strong> and <strong>n8n</strong>, the Agent Marketplace makes agents available as services, SDKs, and MCP servers. The vision is to scale and add a visual builder and orchestrator once enough skills are available on the platform &mdash; so even product managers or non-developers can build agents.</p>
+
+        <h3>MCP Implementation</h3>
+        <p>The platform's agents and systems are built using different technologies and frameworks &mdash; C# (Semantic Kernel, AutoGen), Python (LangChain, LangGraph), and Java (AWS Bedrock agents). MCP serves as the interoperable protocol integrating these systems while giving data owners control through their MCP servers.</p>
+
+        <div class="ep-callout purple">
+            <strong>MCP Registry:</strong> Agents dynamically discover available tools and resources across the organization. Data owners expose resources via their own MCP servers, maintaining control over what's accessible.
+        </div>
+
+        <details class="ep-module" name="mcp" open>
+            <summary><span>Central Authorization</span> <span class="ep-module-tech">Okta + OAuth2</span></summary>
+            <div class="ep-module-body">
+                <p>The JSON-RPC message format with server-side events connection that MCP uses required building a custom <strong>Okta adapter</strong> to implement central authorization from local MCP to cloud-hosted clients.</p>
+            </div>
+        </details>
+
+        <details class="ep-module" name="mcp">
+            <summary><span>Hierarchical Chaining</span> <span class="ep-module-tech">Multi-Agent</span></summary>
+            <div class="ep-module-body">
+                <p>MCP agent chaining for data and tools aggregation with adapters from lower systems. Enables complex, multi-step AI reasoning pipelines by integrating external APIs and automation tools.</p>
+            </div>
+        </details>
+
+        <details class="ep-module" name="mcp">
+            <summary><span>Agent Types</span> <span class="ep-module-tech">Marketplace</span></summary>
+            <div class="ep-module-body">
+                <ul>
+                    <li><strong>Document Processing Agent</strong> &mdash; extraction, parsing, structure recognition</li>
+                    <li><strong>Knowledge Base Agent</strong> &mdash; RAG-powered Q&amp;A</li>
+                    <li><strong>Multi-Modal Agent</strong> &mdash; vision, image captioning, OCR</li>
+                    <li><strong>Orchestration Engine</strong> &mdash; pipelines and workflows</li>
+                    <li><strong>Browsing Agent</strong> &mdash; evolved from custom Playwright to Browser-use, Anthropic Computer Use, and Amazon Nova Act</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="ep-module" name="mcp">
+            <summary><span>Runtime Infrastructure</span> <span class="ep-module-tech">Cross-Stack</span></summary>
+            <div class="ep-module-body">
+                <p>Rate limiting, retry configuration, logging, and guardrails are implemented at both client and server level across runtimes. Also evaluating emerging protocols like IBM ACP and Google A2A for future interoperability.</p>
+            </div>
+        </details>
+
+        <!-- ======== 06 Guardrails ======== -->
+        <div class="ep-chapter" id="guardrails">
+            <div class="ep-chapter-num">06</div>
+            <h2 class="ep-chapter-title">Guardrails &amp; Compliance</h2>
+            <p class="ep-chapter-desc">Enterprise-grade safety, privacy, and regulatory compliance</p>
+        </div>
+
+        <div class="ep-table-wrap">
+            <table class="ep-table">
+                <thead>
+                    <tr><th>Capability</th><th>Implementation</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Content Moderation</strong></td><td>Llama Guard 3 Vision &mdash; multimodal safeguard for human-AI conversations, classifying both prompts and responses</td></tr>
+                    <tr><td><strong>Output Guardrails</strong></td><td>Nemo Guardrails &mdash; customizable AI output filters preventing hallucinations, misinformation, and biased content</td></tr>
+                    <tr><td><strong>PII Redaction</strong></td><td>Real-time detection and redaction of sensitive data before reaching end-users</td></tr>
+                    <tr><td><strong>Access Control</strong></td><td>Role-based (team, user, workload level) with SSO, API keys, OAuth, and IAM</td></tr>
+                    <tr><td><strong>Audit Trail</strong></td><td>Tracks who, what, and why behind every AI decision for regulatory readiness</td></tr>
+                    <tr><td><strong>Fair Housing</strong></td><td>Industry-specific compliance layer for real estate regulations</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ep-callout green">
+            <strong>Regulatory Compliance:</strong> <code>HIPAA</code> &middot; <code>GDPR</code> &middot; <code>California SB 1047</code> &middot; <code>EO 14100</code> &mdash; including safety testing and watermarking of AI-generated content.
+        </div>
+
+        <!-- ======== 07 Observability ======== -->
+        <div class="ep-chapter" id="observability">
+            <div class="ep-chapter-num">07</div>
+            <h2 class="ep-chapter-title">Observability &amp; Analytics</h2>
+            <p class="ep-chapter-desc">End-to-end visibility across all agent runtimes and pipelines</p>
+        </div>
+
+        <p><strong>OpenTelemetry</strong> serves as the backbone, providing end-to-end observability across all agent runtimes and pipelines regardless of the tech stack (C#, Python, Java).</p>
+
+        <div class="ep-stats" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="ep-stat" style="text-align: left; padding: 18px 20px;">
+                <div class="ep-stat-label" style="font-size: 0.7rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px;">Metrics &amp; Dashboards</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Prometheus &amp; Grafana for real-time metrics and alerting</div>
+            </div>
+            <div class="ep-stat" style="text-align: left; padding: 18px 20px;">
+                <div class="ep-stat-label" style="font-size: 0.7rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px;">Logs</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Loki for centralized log aggregation and search</div>
+            </div>
+            <div class="ep-stat" style="text-align: left; padding: 18px 20px;">
+                <div class="ep-stat-label" style="font-size: 0.7rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px;">AI-Specific</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">LangSmith &amp; LangFuse for response evaluation, drift detection, and model benchmarking</div>
+            </div>
+            <div class="ep-stat" style="text-align: left; padding: 18px 20px;">
+                <div class="ep-stat-label" style="font-size: 0.7rem; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px;">Cost Monitoring</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Token consumption tracking across models and departments with predictive cost alerts</div>
+            </div>
+        </div>
+
+        <!-- ======== 08 Products Built ======== -->
+        <div class="ep-chapter" id="products">
+            <div class="ep-chapter-num">08</div>
+            <h2 class="ep-chapter-title">Award-Winning Products</h2>
+            <p class="ep-chapter-desc">Systems built on the platform across business units</p>
+        </div>
+
+        <div class="ep-products">
+            <div class="ep-product">
+                <h4>Listing Concierge</h4>
+                <div class="ep-award">Inman Innovation Award</div>
+                <p>AI-powered marketing copilot for real estate agents &mdash; property description generation, image captioning, virtual staging, highlights, and social media publications. One of the earliest projects built on the platform. Improved conversion by 15%.</p>
+            </div>
+            <div class="ep-product">
+                <h4>Agent Insights</h4>
+                <div class="ep-award">Brokerage Niche Award</div>
+                <p>Recruitment and retention analytics system with autonomous research agents in a multi-agent architecture. Predictive analytics to identify agents who might be a good fit or at risk of leaving, using market data, performance metrics, and social signals.</p>
+            </div>
+            <div class="ep-product">
+                <h4>OFAC Analytics</h4>
+                <div class="ep-award">Agent-Based System</div>
+                <p>Office of Foreign Assets Control compliance system with proprietary matching rules and scoring based on string matching and phonetic algorithms. Searches all people and companies for watch-list compliance.</p>
+            </div>
+            <div class="ep-product">
+                <h4>Title Core</h4>
+                <div class="ep-award">Workflow Automation</div>
+                <p>Several workflow automations, AI agents, and multimodal applications for the title business. Deep embedded workflows, ESS operations, document NLP, and email communication handling.</p>
+            </div>
+            <div class="ep-product">
+                <h4>Lead Scoring Engine</h4>
+                <div class="ep-award">Predictive AI</div>
+                <p>Analyzes incoming leads using client data, online behaviors, and language in inquiries to determine quality and urgency. Matches leads to best-suited agents and continuously learns from successful pairings using vector-based prediction.</p>
+            </div>
+        </div>
+
+        <div class="ep-callout orange">
+            <strong>Platform Reach:</strong> From chatbots and multimodal applications to agent and multi-agent systems &mdash; 23 active applications running across title &amp; settlement, brokerage, relocation, mortgage, and franchising business units.
+        </div>
+
+        <!-- ======== 09 Tech Stack ======== -->
+        <div class="ep-chapter" id="tech-stack">
+            <div class="ep-chapter-num">09</div>
+            <h2 class="ep-chapter-title">Technology Stack</h2>
+            <p class="ep-chapter-desc">Languages, frameworks, infrastructure, and tooling</p>
+        </div>
+
+        <div class="ep-tech-grid">
+            <div class="ep-tech-card">
+                <h4>Languages</h4>
+                <p>Python, C#, Java</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>AI Frameworks</h4>
+                <p>LangChain, LangGraph, Semantic Kernel, AutoGen, LlamaIndex</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>LLM Providers</h4>
+                <p>AWS Bedrock (Claude, Llama, Titan, Cohere, Mistral), Azure OpenAI, Local Models</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Infrastructure</h4>
+                <p>Docker, Kubernetes, Apigee API Gateway</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Data &amp; Storage</h4>
+                <p>MongoDB, Cosmos DB, SQL Server, Redis, Pinecone, ChromaDB, Neo4J</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Observability</h4>
+                <p>OpenTelemetry, Prometheus, Grafana, Loki, LangSmith, LangFuse</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Protocols</h4>
+                <p>MCP (Model Context Protocol), REST, gRPC, OAuth2, JSON-RPC, SSE</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Guardrails</h4>
+                <p>Llama Guard 3 Vision, Nemo Guardrails, PII Redaction</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>Search &amp; Retrieval</h4>
+                <p>Pinecone, ChromaDB, MongoDB Atlas Vector Search, Neo4J Graph, BM25</p>
+            </div>
+            <div class="ep-tech-card">
+                <h4>SDKs Published</h4>
+                <p>npm (TypeScript), NuGet (.NET), PyPI (Python), Postman Libraries</p>
+            </div>
+        </div>
+
+        <!-- ======== 10 Evolution ======== -->
+        <div class="ep-chapter" id="evolution">
+            <div class="ep-chapter-num">10</div>
+            <h2 class="ep-chapter-title">Platform Evolution</h2>
+            <p class="ep-chapter-desc">From one team's request to enterprise-wide standard</p>
+        </div>
+
+        <div class="ep-timeline">
+            <div class="ep-timeline-item">
+                <div class="ep-timeline-phase">Phase 1</div>
+                <div class="ep-timeline-title">Standardize Model Access</div>
+                <div class="ep-timeline-desc">Started with a focused ask &mdash; standardize OpenAI access for one team. Built the initial gateway with provider abstraction and unified API.</div>
+            </div>
+            <div class="ep-timeline-item">
+                <div class="ep-timeline-phase">Phase 2</div>
+                <div class="ep-timeline-title">Core Platform Capabilities</div>
+                <div class="ep-timeline-desc">As AI adoption accelerated, teams wanted different models, different providers, cost controls, guardrails, RAG patterns. Recognized this wasn't about one integration but organizational AI governance. Built prompt management, memory, caching, and the observability backbone.</div>
+            </div>
+            <div class="ep-timeline-item">
+                <div class="ep-timeline-phase">Phase 3</div>
+                <div class="ep-timeline-title">RAG &amp; Agent Services</div>
+                <div class="ep-timeline-desc">Decomposed RAG into an agent-based pipeline offered as a service. Built the agent marketplace, published SDKs, and launched the pipeline builder UI for self-service RAG.</div>
+            </div>
+            <div class="ep-timeline-item">
+                <div class="ep-timeline-phase">Phase 4</div>
+                <div class="ep-timeline-title">MCP &amp; Cross-Team Adoption</div>
+                <div class="ep-timeline-desc">Implemented MCP as the interoperability protocol across C#, Python, and Java runtimes. Built the central MCP registry with Okta authorization. Platform became the standard for 8+ product teams, enabling 23 active applications.</div>
+            </div>
+            <div class="ep-timeline-item">
+                <div class="ep-timeline-phase">Current</div>
+                <div class="ep-timeline-title">Orchestration &amp; Builder</div>
+                <div class="ep-timeline-desc">Scaling toward a visual builder and orchestrator. Exploring multi-agent orchestration at scale, browsing agents (Anthropic Computer Use, Amazon Nova Act), and additional agent communication protocols (IBM ACP, Google A2A).</div>
+            </div>
+        </div>
+
+        <h3>My Role</h3>
+        <ul style="color: var(--text-secondary); margin: 12px 0 0 20px; font-size: 0.9rem;">
+            <li style="margin-bottom: 8px;"><strong>Architecture &amp; Strategy</strong> &mdash; designed and architected the system from the ground up, built the team over time</li>
+            <li style="margin-bottom: 8px;"><strong>Hands-on Development</strong> &mdash; developed core components across prompting, memory, RAG, agents, marketplace, MCP, observability, cost optimization, and administration</li>
+            <li style="margin-bottom: 8px;"><strong>Research &amp; Innovation</strong> &mdash; performed research and POCs to incorporate new capabilities (MCP, browsing agents, multi-agent orchestration)</li>
+            <li style="margin-bottom: 8px;"><strong>Cross-Team Adoption</strong> &mdash; engaged with teams across business units to design and build AI systems on the platform, guiding them toward composable, interface-driven designs</li>
+            <li style="margin-bottom: 8px;"><strong>Platform Evangelism</strong> &mdash; drove adoption through events, articles, hackathons, and targeted PoCs that demonstrated tangible value</li>
+        </ul>
+
+        <div style="margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="enterprise-ai-platform.html" class="btn btn-accent">Simple Project Page</a>
+            <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
+        </div>
+
+    </main>
+</div>
+
+<footer class="footer">
+    Saurabh Prasad - New York, NY
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            const link = document.querySelector(`.ep-toc-link[href="#${e.target.id}"]`);
+            if (link) link.classList.toggle('active', e.isIntersecting);
+        });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+    document.querySelectorAll('[id].ep-chapter').forEach(el => obs.observe(el));
+});
+</script>
+
+</body>
+</html>
