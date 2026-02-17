@@ -1,0 +1,40 @@
+graph TB
+    Query[User Query]
+
+    subgraph MetaExtract["Metadata Extraction"]
+        direction TB
+        MetaRoute{Mode?}
+        Bedrock[Bedrock LLM<br/>Schema-aware]
+        SpacyNLP[Spacy NLP<br/>Regex + NER]
+        Filter["Filter: {key: value}"]
+    end
+
+    subgraph Ensemble["Hybrid Search (EnsembleRetriever)"]
+        direction TB
+        R1["Chroma + Filter<br/>Weight: 0.4"]
+        R2["Chroma Unfiltered<br/>Weight: 0.3"]
+        R3["BM25 Keywords<br/>Weight: 0.3"]
+        Combine[Weighted Score<br/>Combination]
+    end
+
+    subgraph Results["Top K Results"]
+        Docs["Ranked Documents<br/>content + metadata + score"]
+    end
+
+    Query --> MetaRoute
+    MetaRoute -->|Public| Bedrock
+    MetaRoute -->|Private| SpacyNLP
+    Bedrock -->|Fallback| SpacyNLP
+    Bedrock --> Filter
+    SpacyNLP --> Filter
+    Filter --> R1
+    Query --> R2
+    Query --> R3
+    R1 --> Combine
+    R2 --> Combine
+    R3 --> Combine
+    Combine --> Docs
+
+    style MetaExtract fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style Ensemble fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style Results fill:#1a2332,stroke:#bc8cff,color:#c9d1d9

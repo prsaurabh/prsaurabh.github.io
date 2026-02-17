@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalRAG Deep Dive | Saurabh Prasad</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+    /* ============================================
+       LocalRAG Deep Dive — Page-Specific Styles
+       ============================================ */
+
+    html { scroll-behavior: smooth; }
+    [id] { scroll-margin-top: 80px; }
+
+    /* -- Hero -- */
+    .dd-hero {
+        padding: 56px 20px 40px;
+        border-bottom: 1px solid var(--bg-tertiary);
+        text-align: center;
+    }
+    .dd-hero h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .dd-hero .dd-subtitle {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+    }
+    .dd-hero-metrics {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .dd-pill {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    .dd-pill strong {
+        color: var(--accent-blue);
+        font-weight: 700;
+        margin-right: 4px;
+    }
+
+    /* -- Two Column Layout -- */
+    .dd-layout {
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* -- Sidebar TOC -- */
+    .dd-toc {
+        position: sticky;
+        top: 72px;
+        align-self: start;
+        height: calc(100vh - 90px);
+        overflow-y: auto;
+        padding: 32px 0;
+        border-right: 1px solid var(--bg-tertiary);
+    }
+    .dd-toc-heading {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+        padding: 0 16px;
+        margin-bottom: 16px;
+        font-weight: 600;
+    }
+    .dd-toc-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .dd-toc-list li { margin: 0; }
+    .dd-toc-link {
+        display: block;
+        padding: 7px 16px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        border-left: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+    }
+    .dd-toc-link:hover {
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+    .dd-toc-link.active {
+        color: var(--accent-blue);
+        border-left-color: var(--accent-blue);
+    }
+    .dd-toc-toggle-input { display: none; }
+    .dd-toc-toggle-btn { display: none; }
+
+    /* -- Main Content -- */
+    .dd-main {
+        padding: 32px 0 64px 44px;
+        min-width: 0;
+    }
+
+    /* -- Chapter Markers -- */
+    .dd-chapter {
+        padding: 48px 0 0;
+        margin-top: 48px;
+        border-top: 1px solid var(--bg-tertiary);
+    }
+    .dd-chapter:first-of-type {
+        margin-top: 0;
+        border-top: none;
+        padding-top: 0;
+    }
+    .dd-chapter-num {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+        letter-spacing: 2px;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        margin-bottom: 6px;
+    }
+    .dd-chapter-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+        border: none;
+        padding: 0;
+    }
+    .dd-chapter-desc {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 28px;
+    }
+
+    /* -- Prose -- */
+    .dd-main p {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        line-height: 1.75;
+    }
+    .dd-main strong { color: var(--text-primary); }
+    .dd-main h3 {
+        font-size: 1.1rem;
+        color: var(--accent-blue);
+        margin: 28px 0 10px;
+    }
+
+    /* -- Diagram Container -- */
+    .dd-diagram {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 24px;
+        margin: 20px 0;
+        overflow-x: auto;
+    }
+    .dd-diagram img {
+        width: 100%;
+        height: auto;
+        display: block;
+        min-width: 500px;
+    }
+    .dd-diagram-caption {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 12px;
+    }
+
+    /* -- Stats Grid -- */
+    .dd-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin: 24px 0;
+    }
+    .dd-stat {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 18px;
+        text-align: center;
+    }
+    .dd-stat-num {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+    }
+    .dd-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+    }
+
+    /* -- Pipeline Steps -- */
+    .dd-pipeline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 20px 0;
+        overflow-x: auto;
+        padding: 8px 0;
+    }
+    .dd-step {
+        flex: 0 0 auto;
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 14px 18px;
+        text-align: center;
+        min-width: 110px;
+    }
+    .dd-step-num {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--accent-blue);
+        background: #1a2332;
+        width: 22px; height: 22px; line-height: 22px;
+        border-radius: 50%;
+        margin: 0 auto 6px;
+    }
+    .dd-step h4 {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        margin: 0 0 3px;
+    }
+    .dd-step p {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+    .dd-arrow {
+        color: var(--accent-blue);
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    /* -- Tabs (CSS only) -- */
+    .dd-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 24px 0;
+    }
+    .dd-tab-input {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+    }
+    .dd-tab-label {
+        padding: 10px 22px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.2s, border-color 0.2s;
+    }
+    .dd-tab-label:hover { color: var(--text-primary); }
+    .dd-tab-input:checked + .dd-tab-label {
+        color: var(--accent-blue);
+        border-bottom-color: var(--accent-blue);
+    }
+    .dd-tab-panel {
+        display: none;
+        order: 99;
+        width: 100%;
+        padding: 24px 0 0;
+    }
+    #tab-private:checked ~ #panel-private,
+    #tab-public:checked ~ #panel-public,
+    #tab-compare:checked ~ #panel-compare {
+        display: block;
+    }
+
+    /* -- Comparison Table -- */
+    .dd-compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        margin: 16px 0;
+    }
+    .dd-compare-table th {
+        text-align: left;
+        padding: 10px 14px;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .dd-compare-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--bg-tertiary);
+        color: var(--text-secondary);
+    }
+    .dd-compare-table tr:last-child td { border-bottom: none; }
+
+    /* -- Accordions (Component Details) -- */
+    .dd-module {
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: var(--bg-secondary);
+        overflow: hidden;
+    }
+    .dd-module summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        cursor: pointer;
+        list-style: none;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .dd-module summary::-webkit-details-marker { display: none; }
+    .dd-module summary::before {
+        content: '\25B6';
+        font-size: 0.6rem;
+        color: var(--text-secondary);
+        margin-right: 12px;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+    }
+    .dd-module[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    .dd-module-tech {
+        font-size: 0.7rem;
+        color: var(--accent-blue);
+        background: #1a2332;
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    .dd-module-body {
+        padding: 0 18px 18px;
+        border-top: 1px solid var(--bg-tertiary);
+    }
+    .dd-module-body p {
+        font-size: 0.85rem;
+        margin: 12px 0 0;
+    }
+    .dd-module-body ul {
+        margin: 8px 0 0 18px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    .dd-module-body li { margin-bottom: 4px; }
+    .dd-module-group-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin: 28px 0 10px;
+        font-weight: 600;
+    }
+
+    /* -- Tech Stack Grid -- */
+    .dd-tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+    }
+    .dd-tech-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 18px;
+    }
+    .dd-tech-card h4 {
+        font-size: 0.78rem;
+        color: var(--accent-blue);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0 0 6px;
+    }
+    .dd-tech-card p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* -- Infra Callout -- */
+    .dd-callout {
+        background: #1a2332;
+        border: 1px solid #1f3a5f;
+        border-left: 3px solid var(--accent-blue);
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin: 16px 0;
+        font-size: 0.85rem;
+    }
+    .dd-callout code {
+        background: var(--bg-tertiary);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', 'Consolas', monospace;
+        color: var(--accent-green);
+    }
+
+    /* -- Doc Links Grid -- */
+    .dd-doc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+    }
+    .dd-doc-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: 8px;
+        padding: 18px;
+        transition: border-color 0.2s;
+    }
+    .dd-doc-card:hover { border-color: var(--accent-blue); }
+    .dd-doc-card h4 {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        margin: 0 0 6px;
+    }
+    .dd-doc-card p {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+    .dd-doc-card a {
+        font-size: 0.78rem;
+        margin-top: 8px;
+        display: inline-block;
+    }
+
+    /* -- Responsive -- */
+    @media (max-width: 900px) {
+        .dd-layout {
+            grid-template-columns: 1fr;
+        }
+        .dd-toc {
+            position: relative;
+            top: auto;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid var(--bg-tertiary);
+            max-height: 0;
+            overflow: hidden;
+            padding: 0;
+            transition: max-height 0.3s ease-out;
+        }
+        .dd-toc-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin: 24px 20px 0;
+        }
+        .dd-toc-toggle-input:checked ~ .dd-toc {
+            max-height: 500px;
+            padding: 16px 0;
+        }
+        .dd-main { padding-left: 0; padding: 24px 0 48px; }
+        .dd-layout { padding: 0 16px; }
+        .dd-pipeline { flex-direction: column; }
+        .dd-arrow { transform: rotate(90deg); }
+        .dd-step { width: 100%; }
+    }
+    @media (max-width: 600px) {
+        .dd-hero h1 { font-size: 1.6rem; }
+        .dd-stats { grid-template-columns: repeat(2, 1fr); }
+        .dd-tech-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="../index.html" class="nav-brand">SP</a>
+    <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../projects.html">Projects</a>
+        <a href="../articles.html">Articles</a>
+        <a href="../experience.html">Experience</a>
+    </div>
+</nav>
+
+<!-- ======== Hero ======== -->
+<div class="dd-hero">
+    <h1>LocalRAG &mdash; Technical Deep Dive</h1>
+    <p class="dd-subtitle">Complete architecture analysis of a dual-mode RAG system with hybrid search</p>
+    <div class="dd-hero-metrics">
+        <span class="dd-pill"><strong>2</strong> Operating Modes</span>
+        <span class="dd-pill"><strong>8</strong> File Formats</span>
+        <span class="dd-pill"><strong>15</strong> Backend Modules</span>
+        <span class="dd-pill"><strong>3</strong> Search Retrievers</span>
+        <span class="dd-pill"><strong>0</strong> Data Sent (Private)</span>
+    </div>
+</div>
+
+<!-- ======== Mobile TOC Toggle ======== -->
+<input type="checkbox" id="toc-toggle" class="dd-toc-toggle-input">
+<label for="toc-toggle" class="dd-toc-toggle-btn">&#9776; Table of Contents</label>
+
+<!-- ======== Layout Grid ======== -->
+<div class="dd-layout">
+
+    <!-- Sidebar TOC -->
+    <aside class="dd-toc">
+        <div class="dd-toc-heading">On This Page</div>
+        <ul class="dd-toc-list">
+            <li><a href="#overview" class="dd-toc-link">Overview</a></li>
+            <li><a href="#architecture" class="dd-toc-link">Architecture</a></li>
+            <li><a href="#data-pipeline" class="dd-toc-link">Data Pipeline</a></li>
+            <li><a href="#dual-mode" class="dd-toc-link">Dual Mode</a></li>
+            <li><a href="#components" class="dd-toc-link">Components</a></li>
+            <li><a href="#tech-stack" class="dd-toc-link">Tech Stack</a></li>
+            <li><a href="#infrastructure" class="dd-toc-link">Infrastructure</a></li>
+            <li><a href="#documentation" class="dd-toc-link">Documentation</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dd-main">
+
+        <!-- ======== 01 Overview ======== -->
+        <div class="dd-chapter" id="overview">
+            <div class="dd-chapter-num">01</div>
+            <h2 class="dd-chapter-title">Overview</h2>
+            <p class="dd-chapter-desc">What LocalRAG does and how it's built</p>
+        </div>
+
+        <p><strong>LocalRAG</strong> (branded "DocuAssist" in the API) is a production-ready Retrieval-Augmented Generation system with dual-mode operation. Public mode uses AWS Bedrock (Claude 3 Haiku, Titan Embeddings, Cohere Vision) for cloud-powered inference. Private mode runs entirely local with Ollama, ensuring zero data leaves the machine.</p>
+        <p>The system implements <strong>hybrid search</strong> combining dense vector similarity (ChromaDB) with sparse keyword matching (BM25) via a weighted ensemble. It handles text and image documents through a unified extraction pipeline, supports three chunking strategies, provides intelligent conversation memory (Mem0 + sliding window), and includes PII protection via Microsoft Presidio.</p>
+        <p>Built with <strong>FastAPI</strong> on the backend and <strong>Next.js 14</strong> on the frontend, deployed via Docker to AWS EC2 with a GitHub Actions CI/CD pipeline.</p>
+
+        <div class="dd-stats">
+            <div class="dd-stat">
+                <div class="dd-stat-num">2</div>
+                <div class="dd-stat-label">Operating Modes</div>
+            </div>
+            <div class="dd-stat">
+                <div class="dd-stat-num">3</div>
+                <div class="dd-stat-label">Chunking Strategies</div>
+            </div>
+            <div class="dd-stat">
+                <div class="dd-stat-num">3</div>
+                <div class="dd-stat-label">Ensemble Retrievers</div>
+            </div>
+            <div class="dd-stat">
+                <div class="dd-stat-num">5</div>
+                <div class="dd-stat-label">Bedrock Model Families</div>
+            </div>
+            <div class="dd-stat">
+                <div class="dd-stat-num">20</div>
+                <div class="dd-stat-label">Memory Turns</div>
+            </div>
+            <div class="dd-stat">
+                <div class="dd-stat-num">7</div>
+                <div class="dd-stat-label">API Endpoints</div>
+            </div>
+        </div>
+
+        <!-- ======== 02 Architecture ======== -->
+        <div class="dd-chapter" id="architecture">
+            <div class="dd-chapter-num">02</div>
+            <h2 class="dd-chapter-title">Architecture</h2>
+            <p class="dd-chapter-desc">How the components connect end-to-end</p>
+        </div>
+
+        <p>The backend is organized into five module layers: <strong>Core</strong> (config, caching, prompts, Bedrock client), <strong>Data Loading</strong> (text extraction, OCR, chunking, indexing), <strong>Retrieval</strong> (hybrid search, metadata extraction), <strong>Generation</strong> (LLM generation, memory, PII), and <strong>API</strong> (FastAPI routes and Pydantic models).</p>
+
+        <div class="dd-diagram">
+            <img src="../docs/temp/localrag-overview.svg" alt="LocalRAG system architecture showing Frontend, API, Ingestion, Storage, Retrieval, Generation, and Provider subsystems">
+            <div class="dd-diagram-caption">Figure 1 &mdash; High-level system architecture</div>
+        </div>
+
+        <p>Every component has isolated private and public paths using <strong>separate databases, separate indices, and different embedding dimensions</strong> (768d local vs 1024d cloud) to prevent cross-contamination. The Bedrock client auto-detects model family (Claude, Llama, Mistral, Titan, Cohere) from the model ID prefix, normalizing request/response formats behind a unified interface.</p>
+
+        <!-- ======== 03 Data Pipeline ======== -->
+        <div class="dd-chapter" id="data-pipeline">
+            <div class="dd-chapter-num">03</div>
+            <h2 class="dd-chapter-title">Data Pipeline</h2>
+            <p class="dd-chapter-desc">Ingestion, retrieval, and generation flows</p>
+        </div>
+
+        <h3>Ingestion Pipeline</h3>
+        <div class="dd-pipeline">
+            <div class="dd-step"><div class="dd-step-num">1</div><h4>Upload</h4><p>PDF, DOCX, TXT<br>PNG, TIFF, BMP</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">2</div><h4>Extract</h4><p>Docling (private)<br>Bedrock Vision (public)</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">3</div><h4>Chunk</h4><p>Semantic / Spacy<br>/ Recursive</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">4</div><h4>Embed</h4><p>SBERT 768d (priv)<br>Titan 1024d (pub)</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">5</div><h4>Store</h4><p>ChromaDB<br>+ BM25 Index</p></div>
+        </div>
+
+        <div class="dd-diagram">
+            <img src="../docs/temp/localrag-ingestion.svg" alt="Ingestion pipeline flow from file upload through text extraction, chunking, embedding, to storage">
+            <div class="dd-diagram-caption">Figure 2 &mdash; Ingestion pipeline detail</div>
+        </div>
+
+        <h3>Retrieval Pipeline</h3>
+        <p>Queries go through optional <strong>metadata extraction</strong> (Bedrock LLM or Spacy NLP) to produce a filter, then hit a three-retriever ensemble:</p>
+
+        <div class="dd-callout">
+            <strong>Ensemble Weights (with metadata filter):</strong><br>
+            Chroma + filter: <code>0.4</code> &nbsp;&middot;&nbsp;
+            Chroma unfiltered: <code>0.3</code> &nbsp;&middot;&nbsp;
+            BM25 keywords: <code>0.3</code><br><br>
+            <strong>Without metadata filter:</strong><br>
+            Chroma unfiltered: <code>0.7</code> &nbsp;&middot;&nbsp;
+            BM25 keywords: <code>0.3</code>
+        </div>
+
+        <div class="dd-diagram">
+            <img src="../docs/temp/localrag-retrieval.svg" alt="Retrieval pipeline showing metadata extraction feeding into hybrid ensemble search">
+            <div class="dd-diagram-caption">Figure 3 &mdash; Hybrid retrieval with ensemble scoring</div>
+        </div>
+
+        <h3>Generation Pipeline</h3>
+        <p>Retrieved context is combined with <strong>conversation history</strong> (Mem0 semantic search or sliding window) and an output-primed prompt template. The prompt ends with <code>"Answer: The"</code> to force direct responses without preambles.</p>
+
+        <div class="dd-diagram">
+            <img src="../docs/temp/localrag-generation.svg" alt="Generation pipeline showing memory retrieval, prompt assembly, and LLM generation">
+            <div class="dd-diagram-caption">Figure 4 &mdash; Generation with memory integration</div>
+        </div>
+
+        <!-- ======== 04 Dual Mode ======== -->
+        <div class="dd-chapter" id="dual-mode">
+            <div class="dd-chapter-num">04</div>
+            <h2 class="dd-chapter-title">Dual Mode Architecture</h2>
+            <p class="dd-chapter-desc">Private (local) vs Public (cloud) &mdash; complete isolation</p>
+        </div>
+
+        <div class="dd-tabs">
+            <input type="radio" name="mode" id="tab-private" checked class="dd-tab-input">
+            <label for="tab-private" class="dd-tab-label">Private / Local</label>
+
+            <input type="radio" name="mode" id="tab-public" class="dd-tab-input">
+            <label for="tab-public" class="dd-tab-label">Public / Cloud</label>
+
+            <input type="radio" name="mode" id="tab-compare" class="dd-tab-input">
+            <label for="tab-compare" class="dd-tab-label">Side-by-Side</label>
+
+            <div class="dd-tab-panel" id="panel-private">
+                <p>Runs <strong>100% on-device</strong>. No cloud calls, no API keys needed. Uses Ollama for LLM inference (qwen3:4b), Docling for document parsing, SBERT nomic-embed-text for 768-dimensional embeddings, Nomic Vision for image embeddings, and a sliding-window memory (deque, 20 turns). Ideal for sensitive or confidential documents where data sovereignty matters.</p>
+                <div class="dd-callout">
+                    <strong>Cost:</strong> <code>$0</code> &nbsp;&middot;&nbsp;
+                    <strong>LLM:</strong> <code>Ollama qwen3:4b</code> &nbsp;&middot;&nbsp;
+                    <strong>Embeddings:</strong> <code>768d</code> &nbsp;&middot;&nbsp;
+                    <strong>Vision:</strong> <code>qwen2.5vl:3b</code>
+                </div>
+            </div>
+
+            <div class="dd-tab-panel" id="panel-public">
+                <p>Uses <strong>AWS Bedrock</strong> for all inference. Claude 3 Haiku for generation, Titan Embed v2 for 1024-dimensional text embeddings, Cohere Embed v4 for image embeddings, and Bedrock Vision for OCR. Memory uses Mem0 (semantic, LLM-powered) with sliding-window fallback. Supports streaming responses via SSE.</p>
+                <div class="dd-callout">
+                    <strong>Cost:</strong> <code>Pay-per-token</code> &nbsp;&middot;&nbsp;
+                    <strong>LLM:</strong> <code>Claude 3 Haiku</code> &nbsp;&middot;&nbsp;
+                    <strong>Embeddings:</strong> <code>1024d</code> &nbsp;&middot;&nbsp;
+                    <strong>Streaming:</strong> <code>SSE</code>
+                </div>
+            </div>
+
+            <div class="dd-tab-panel" id="panel-compare">
+                <table class="dd-compare-table">
+                    <thead>
+                        <tr><th>Layer</th><th>Private (Local)</th><th>Public (AWS)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>LLM</td><td>Ollama qwen3:4b</td><td>Bedrock Claude 3 Haiku</td></tr>
+                        <tr><td>Text Embeddings</td><td>SBERT nomic-embed-text (768d)</td><td>Bedrock Titan v2 (1024d)</td></tr>
+                        <tr><td>Image Embeddings</td><td>Nomic Vision (768d)</td><td>Cohere Embed v4 (1024d)</td></tr>
+                        <tr><td>Text Extraction</td><td>Docling (local)</td><td>Bedrock Claude 3 Vision</td></tr>
+                        <tr><td>Metadata Extraction</td><td>Spacy NLP</td><td>Bedrock LLM + Spacy fallback</td></tr>
+                        <tr><td>Memory</td><td>Sliding window (20 turns)</td><td>Mem0 + sliding window</td></tr>
+                        <tr><td>Vector DB</td><td>ChromaDB (private collection)</td><td>ChromaDB (public collection)</td></tr>
+                        <tr><td>BM25 Index</td><td>bm25_index_private.pkl</td><td>bm25_index_public.pkl</td></tr>
+                        <tr><td>Streaming</td><td>Not supported</td><td>SSE (Server-Sent Events)</td></tr>
+                        <tr><td>Cost</td><td>$0</td><td>Pay-per-token</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dd-diagram">
+            <img src="../docs/temp/localrag-dual-mode.svg" alt="Dual mode architecture showing complete component isolation between Private and Public paths">
+            <div class="dd-diagram-caption">Figure 5 &mdash; Mode-specific component selection</div>
+        </div>
+
+        <!-- ======== 05 Components ======== -->
+        <div class="dd-chapter" id="components">
+            <div class="dd-chapter-num">05</div>
+            <h2 class="dd-chapter-title">Components</h2>
+            <p class="dd-chapter-desc">Module-level details with progressive disclosure</p>
+        </div>
+
+        <div class="dd-module-group-label">Core</div>
+
+        <details class="dd-module" name="components" open>
+            <summary><span>Configuration System</span> <span class="dd-module-tech">Pydantic Settings</span></summary>
+            <div class="dd-module-body">
+                <p><strong>core/config.py</strong> &mdash; Centralized configuration via Pydantic Settings with environment variable override. Single global instance. Mode-specific path isolation prevents cross-contamination between private and public databases.</p>
+                <ul>
+                    <li>AWS credentials (optional for private mode)</li>
+                    <li>Model IDs for generation, embedding, vision, metadata per mode</li>
+                    <li>Feature flags: <code>use_mem0_public</code>, <code>max_conversation_turns</code>, <code>bm25_max_documents</code></li>
+                    <li>Path getters: <code>get_chroma_db_path(private)</code>, <code>get_bm25_index_path(private)</code></li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Caching Layer</span> <span class="dd-module-tech">Global Singletons</span></summary>
+            <div class="dd-module-body">
+                <p><strong>core/cache.py</strong> &mdash; Lazy-loaded global singletons prevent expensive model reloading. Mode-specific caches use dictionaries keyed by <code>{"private": ..., "public": ...}</code>.</p>
+                <ul>
+                    <li>SBERT embeddings (768d), Spacy NLP, BM25 retrievers, metadata schemas</li>
+                    <li>Custom <code>NomicVisionEmbeddings</code>: HuggingFace model, L2-normalized CLS token, 768d</li>
+                    <li>Custom <code>CohereImageEmbeddings</code>: Bedrock Cohere Embed v4, data URI format, 1024d</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Bedrock Client</span> <span class="dd-module-tech">Multi-Model Abstraction</span></summary>
+            <div class="dd-module-body">
+                <p><strong>core/bedrock_client.py</strong> &mdash; Auto-detects model family from model ID prefix, normalizes request/response formats. Supports Claude, Llama, Mistral, Titan, and Cohere through a single <code>invoke_text_model()</code> interface.</p>
+                <ul>
+                    <li>Text generation: unified + streaming variants</li>
+                    <li>Vision: <code>invoke_vision_model()</code> for image+text input (Claude only)</li>
+                    <li>Model switching requires only changing the model ID string</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Prompt Templates</span> <span class="dd-module-tech">Dual-Model Prompts</span></summary>
+            <div class="dd-module-body">
+                <p><strong>core/prompts.py</strong> &mdash; Separate templates for Ollama vs Bedrock. Schema-aware metadata extraction when field names are available. Output priming technique: prompts end with <code>"Answer: The"</code> to force direct responses without preambles like "Based on the documents...".</p>
+            </div>
+        </details>
+
+        <div class="dd-module-group-label">Data Loading</div>
+
+        <details class="dd-module" name="components">
+            <summary><span>Text Extraction</span> <span class="dd-module-tech">Docling + Bedrock Vision</span></summary>
+            <div class="dd-module-body">
+                <p><strong>data_loading/text_extraction.py</strong> &mdash; Unified entry point <code>extract_text_unified()</code> routes by mode and file type. Private mode uses Docling (outputs Markdown preserving structure). Public mode uses Bedrock Vision for PDFs/images. Plain text files use direct read in both modes.</p>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Chunking</span> <span class="dd-module-tech">3 Strategies</span></summary>
+            <div class="dd-module-body">
+                <p><strong>data_loading/chunking.py</strong> &mdash; Three strategies selectable per upload:</p>
+                <ul>
+                    <li><strong>Semantic</strong> &mdash; LangChain SemanticChunker with mode-specific embeddings, percentile breakpoint (0.7). Best quality, slowest.</li>
+                    <li><strong>Spacy</strong> &mdash; Sentence-based splitting into ~3 chunks. Medium speed, good quality.</li>
+                    <li><strong>Recursive</strong> &mdash; Character split at 600 chars with 30-char overlap. Fastest, adequate quality.</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Indexing &amp; Storage</span> <span class="dd-module-tech">ChromaDB + BM25</span></summary>
+            <div class="dd-module-body">
+                <p><strong>data_loading/indexing.py</strong> &mdash; Stores embeddings in mode-specific ChromaDB collections. Rebuilds BM25 sparse index from full corpus on each upload (skipped if >5000 docs). Auto-extracts metadata schema (unique field names) at zero extra cost. Image indexing uses separate collections with vision embeddings.</p>
+            </div>
+        </details>
+
+        <div class="dd-module-group-label">Retrieval</div>
+
+        <details class="dd-module" name="components">
+            <summary><span>Metadata Extraction</span> <span class="dd-module-tech">3-Tier Fallback</span></summary>
+            <div class="dd-module-body">
+                <p><strong>retrieval/metadata_extraction.py</strong> &mdash; Extracts structured filters from natural language queries. Three-tier fallback: Bedrock LLM (best accuracy, public) &rarr; Ollama (private) &rarr; Spacy NLP (regex + NER, always works). Returns single key-value pair for ChromaDB filtering.</p>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Hybrid Retriever</span> <span class="dd-module-tech">EnsembleRetriever</span></summary>
+            <div class="dd-module-body">
+                <p><strong>retrieval/retriever.py</strong> &mdash; Combines up to 3 retrievers via LangChain's EnsembleRetriever with configurable weights. Chroma+filter (0.4) catches precise metadata matches, Chroma unfiltered (0.3) provides safety net, BM25 (0.3) handles exact keyword matches. Each retriever returns 15 internal candidates; ensemble re-ranks and returns top-k.</p>
+            </div>
+        </details>
+
+        <div class="dd-module-group-label">Generation</div>
+
+        <details class="dd-module" name="components">
+            <summary><span>LLM Generation</span> <span class="dd-module-tech">Ollama + Bedrock</span></summary>
+            <div class="dd-module-body">
+                <p><strong>generation/generator.py</strong> &mdash; Routes generation to Ollama (private) or Bedrock (public). Integrates conversation memory, supports both text and vision generation, and provides streaming via SSE for public mode. Vision generation uses the first retrieved image with base64 encoding.</p>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>Memory System</span> <span class="dd-module-tech">Mem0 + Sliding Window</span></summary>
+            <div class="dd-module-body">
+                <p><strong>generation/memory.py</strong> &mdash; Private mode uses a simple in-memory deque per session (last 20 turns). Public mode uses Mem0 for semantic memory search (finds relevant memories by meaning, not just recency) with sliding window as resilient fallback. Public always writes to both stores. Mem0 initialization failures are non-fatal.</p>
+            </div>
+        </details>
+
+        <details class="dd-module" name="components">
+            <summary><span>PII Protection</span> <span class="dd-module-tech">Presidio</span></summary>
+            <div class="dd-module-body">
+                <p><strong>generation/pii.py</strong> &mdash; Reversible PII masking via Microsoft Presidio. Detects PERSON, SSN, EMAIL, PHONE, CREDIT_CARD, etc. Replaces with unique placeholders (<code>&lt;PERSON_1&gt;</code>). Currently implemented but not integrated into the API flow &mdash; ready for activation via a per-request flag.</p>
+            </div>
+        </details>
+
+        <!-- ======== 06 Tech Stack ======== -->
+        <div class="dd-chapter" id="tech-stack">
+            <div class="dd-chapter-num">06</div>
+            <h2 class="dd-chapter-title">Technology Stack</h2>
+            <p class="dd-chapter-desc">Languages, frameworks, and infrastructure</p>
+        </div>
+
+        <div class="dd-tech-grid">
+            <div class="dd-tech-card">
+                <h4>Backend</h4>
+                <p>FastAPI 0.115, Python 3.11+, Pydantic, uvicorn</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Frontend</h4>
+                <p>Next.js 14, React 18, TypeScript, Tailwind CSS, react-markdown</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Vector Search</h4>
+                <p>ChromaDB 0.5.7, BM25 (rank-bm25), LangChain EnsembleRetriever</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>LLM Providers</h4>
+                <p>AWS Bedrock (Claude, Llama, Titan, Cohere, Mistral), Ollama</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Document Processing</h4>
+                <p>Docling 2.66+, PyMuPDF, Pillow, Spacy 3.8+</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Embeddings</h4>
+                <p>nomic-embed-text (768d), Titan v2 (1024d), Nomic Vision, Cohere v4</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Memory &amp; PII</h4>
+                <p>Mem0, Presidio Analyzer + Anonymizer, sentence-transformers</p>
+            </div>
+            <div class="dd-tech-card">
+                <h4>Infrastructure</h4>
+                <p>Docker Compose, GitHub Actions, AWS ECR + EC2, Redis (optional)</p>
+            </div>
+        </div>
+
+        <!-- ======== 07 Infrastructure ======== -->
+        <div class="dd-chapter" id="infrastructure">
+            <div class="dd-chapter-num">07</div>
+            <h2 class="dd-chapter-title">Infrastructure</h2>
+            <p class="dd-chapter-desc">Deployment pipeline and production architecture</p>
+        </div>
+
+        <h3>Deployment Flow</h3>
+        <div class="dd-pipeline">
+            <div class="dd-step"><div class="dd-step-num">1</div><h4>Push</h4><p>Git push to<br>master/main</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">2</div><h4>Build</h4><p>GitHub Actions<br>Docker images</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">3</div><h4>Push</h4><p>Images to<br>AWS ECR</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">4</div><h4>Deploy</h4><p>SSH to EC2<br>Pull &amp; run</p></div>
+            <div class="dd-arrow">&rarr;</div>
+            <div class="dd-step"><div class="dd-step-num">5</div><h4>Live</h4><p>Backend: 8000<br>Frontend: 3000</p></div>
+        </div>
+
+        <h3>Production Setup</h3>
+        <div class="dd-callout">
+            <strong>Instance:</strong> <code>t3.small</code> (2GB RAM minimum) &nbsp;&middot;&nbsp;
+            <strong>Storage:</strong> <code>20GB gp3 EBS</code> &nbsp;&middot;&nbsp;
+            <strong>Region:</strong> <code>us-east-1</code><br><br>
+            Data persists on host-mounted volume: <code>/home/ec2-user/docuassist-data</code><br>
+            Multi-stage Dockerfile runs as non-root <code>appuser</code> for security.
+        </div>
+
+        <p>Docker Compose orchestrates backend + frontend + optional Redis. The backend Dockerfile uses multi-stage build: Stage 1 installs dependencies and downloads Spacy models, Stage 2 copies only production artifacts for a smaller final image. Frontend receives the API URL as a build argument for environment-specific deployment.</p>
+
+        <h3>Testing</h3>
+        <p>7 pytest tests covering health, upload, retrieve, chat, and generate endpoints across both modes. Public-mode tests auto-skip without AWS credentials. Quick test script supports <code>--mode private|public|both</code> for manual smoke testing.</p>
+
+        <!-- ======== 08 Documentation ======== -->
+        <div class="dd-chapter" id="documentation">
+            <div class="dd-chapter-num">08</div>
+            <h2 class="dd-chapter-title">Documentation</h2>
+            <p class="dd-chapter-desc">Detailed analysis files and architecture diagrams</p>
+        </div>
+
+        <h3>Analysis Documents</h3>
+        <div class="dd-doc-grid">
+            <div class="dd-doc-card">
+                <h4>Architecture Overview</h4>
+                <p>Executive summary, module map, API endpoints, deployment architecture, file layout.</p>
+                <a href="../docs/temp/01-architecture-overview.md" target="_blank">View document &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Backend Pipeline</h4>
+                <p>Deep dive into all 15 backend modules: config through PII protection, with complete data flows.</p>
+                <a href="../docs/temp/02-backend-pipeline.md" target="_blank">View document &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Frontend Analysis</h4>
+                <p>Component architecture, streaming SSE, state management, Gradio vs Next.js comparison.</p>
+                <a href="../docs/temp/03-frontend-analysis.md" target="_blank">View document &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Dual-Mode &amp; Infrastructure</h4>
+                <p>Mode switching, Docker orchestration, CI/CD pipeline, AWS architecture, cost analysis.</p>
+                <a href="../docs/temp/04-dual-mode-and-infrastructure.md" target="_blank">View document &rarr;</a>
+            </div>
+        </div>
+
+        <h3>Architecture Diagrams</h3>
+        <div class="dd-doc-grid">
+            <div class="dd-doc-card">
+                <h4>System Overview</h4>
+                <p>High-level: Frontend, API, Ingestion, Storage, Retrieval, Generation, Providers.</p>
+                <a href="../docs/temp/localrag-overview.svg" target="_blank">View SVG &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Ingestion Pipeline</h4>
+                <p>Upload through extraction, chunking, embedding, to ChromaDB + BM25 storage.</p>
+                <a href="../docs/temp/localrag-ingestion.svg" target="_blank">View SVG &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Retrieval Pipeline</h4>
+                <p>Query through metadata extraction to weighted ensemble hybrid search.</p>
+                <a href="../docs/temp/localrag-retrieval.svg" target="_blank">View SVG &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Generation Pipeline</h4>
+                <p>Memory retrieval, prompt assembly, LLM generation with mode routing.</p>
+                <a href="../docs/temp/localrag-generation.svg" target="_blank">View SVG &rarr;</a>
+            </div>
+            <div class="dd-doc-card">
+                <h4>Dual Mode</h4>
+                <p>Complete component isolation between Private and Public paths.</p>
+                <a href="../docs/temp/localrag-dual-mode.svg" target="_blank">View SVG &rarr;</a>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="https://github.com/prsaurabh/LocalRAG" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="local-rag.html" class="btn btn-primary">Simple Project Page</a>
+            <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
+        </div>
+
+    </main>
+</div>
+
+<footer class="footer">
+    Saurabh Prasad - New York, NY
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            const link = document.querySelector(`.dd-toc-link[href="#${e.target.id}"]`);
+            if (link) link.classList.toggle('active', e.isIntersecting);
+        });
+    }, { rootMargin: '-80px 0px -60% 0px' });
+    document.querySelectorAll('[id].dd-chapter').forEach(el => obs.observe(el));
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+graph TB
+    Query[User Query + Retrieved Context]
+
+    subgraph Memory["Conversation Memory"]
+        direction TB
+        MemRoute{Mode?}
+        Mem0[Mem0<br/>Semantic Search]
+        Sliding[Sliding Window<br/>Last 5 Exchanges]
+        History["Conversation History"]
+    end
+
+    subgraph Prompt["Prompt Assembly"]
+        Template["System Rules<br/>+ History<br/>+ Context<br/>+ Question<br/>+ Output Primer"]
+    end
+
+    subgraph Generate["LLM Generation"]
+        direction TB
+        GenRoute{Mode?}
+        Ollama[Ollama<br/>qwen3:4b]
+        BedrockLLM[Bedrock<br/>Claude 3 Haiku]
+        Answer[Generated Answer]
+    end
+
+    subgraph Save["Memory Update"]
+        SaveMem[Save Q+A<br/>to Session Memory]
+    end
+
+    Query --> MemRoute
+    MemRoute -->|Public| Mem0
+    MemRoute -->|Private| Sliding
+    Mem0 -->|Fallback| Sliding
+    Mem0 --> History
+    Sliding --> History
+    History --> Template
+    Query --> Template
+    Template --> GenRoute
+    GenRoute -->|Private| Ollama
+    GenRoute -->|Public| BedrockLLM
+    Ollama --> Answer
+    BedrockLLM --> Answer
+    Answer --> SaveMem
+
+    style Memory fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style Prompt fill:#1a2332,stroke:#f0883e,color:#c9d1d9
+    style Generate fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style Save fill:#1a2332,stroke:#bc8cff,color:#c9d1d9

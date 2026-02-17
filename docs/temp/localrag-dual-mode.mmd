@@ -1,0 +1,44 @@
+graph TB
+    subgraph Private["Private Mode (Local)"]
+        direction TB
+        P_Extract[Docling<br/>Text Extraction]
+        P_Embed[SBERT nomic-embed-text<br/>768 dimensions]
+        P_Vision[Nomic Vision<br/>768 dimensions]
+        P_Store[(ChromaDB Private<br/>+ BM25 Private)]
+        P_Meta[Spacy NLP<br/>Metadata Extraction]
+        P_Gen[Ollama qwen3:4b<br/>Generation]
+        P_Mem[Sliding Window<br/>20 turns max]
+    end
+
+    subgraph Public["Public Mode (AWS)"]
+        direction TB
+        B_Extract[Bedrock Vision<br/>OCR Extraction]
+        B_Embed[Titan Embed v2<br/>1024 dimensions]
+        B_Vision[Cohere Embed v4<br/>1024 dimensions]
+        B_Store[(ChromaDB Public<br/>+ BM25 Public)]
+        B_Meta[Bedrock LLM<br/>Metadata Extraction]
+        B_Gen[Bedrock Claude 3<br/>Generation]
+        B_Mem[Mem0 + Sliding Window<br/>Semantic Memory]
+    end
+
+    API{{"private_mode: bool"}}
+
+    API -->|true| Private
+    API -->|false| Public
+
+    P_Extract --> P_Embed
+    P_Embed --> P_Store
+    P_Vision --> P_Store
+    P_Store --> P_Meta
+    P_Meta --> P_Gen
+    P_Mem --> P_Gen
+
+    B_Extract --> B_Embed
+    B_Embed --> B_Store
+    B_Vision --> B_Store
+    B_Store --> B_Meta
+    B_Meta --> B_Gen
+    B_Mem --> B_Gen
+
+    style Private fill:#1a1a2e,stroke:#bc8cff,color:#c9d1d9
+    style Public fill:#1a2332,stroke:#3fb950,color:#c9d1d9

@@ -1,0 +1,64 @@
+graph TB
+    subgraph Frontend["Frontend (Next.js)"]
+        UI[Chat Interface]
+        Upload[Document Upload]
+    end
+
+    subgraph API["API Layer (FastAPI)"]
+        REST[REST Endpoints]
+    end
+
+    subgraph Ingestion["Data Ingestion"]
+        Extract[Text Extraction<br/>PyMuPDF + OCR]
+        Chunk[Chunking<br/>Recursive Splitter]
+        Embed[Embedding<br/>nomic-embed-text]
+    end
+
+    subgraph Storage["Vector Storage"]
+        Chroma[(ChromaDB<br/>Persistent)]
+        BM25[(BM25 Index)]
+    end
+
+    subgraph Retrieval["Retrieval Pipeline"]
+        Hybrid[Hybrid Search<br/>Vector + BM25]
+        Meta[Metadata Filtering]
+        Rerank[Result Ranking]
+    end
+
+    subgraph Generation["Generation"]
+        Memory[Conversation Memory]
+        PII[PII Detection]
+        LLM{LLM Provider}
+    end
+
+    subgraph Providers["Dual Mode"]
+        Bedrock[AWS Bedrock<br/>Claude]
+        Ollama[Ollama<br/>Local Models]
+    end
+
+    UI --> REST
+    Upload --> REST
+    REST --> Extract
+    Extract --> Chunk
+    Chunk --> Embed
+    Embed --> Chroma
+    Embed --> BM25
+    REST --> Hybrid
+    Hybrid --> Chroma
+    Hybrid --> BM25
+    Meta --> Hybrid
+    Hybrid --> Rerank
+    Rerank --> LLM
+    Memory --> LLM
+    PII --> LLM
+    LLM --> Bedrock
+    LLM --> Ollama
+    LLM --> UI
+
+    style Frontend fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style API fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style Ingestion fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style Storage fill:#1a2332,stroke:#f0883e,color:#c9d1d9
+    style Retrieval fill:#1a2332,stroke:#bc8cff,color:#c9d1d9
+    style Generation fill:#1a2332,stroke:#f85149,color:#c9d1d9
+    style Providers fill:#1a2332,stroke:#58a6ff,color:#c9d1d9

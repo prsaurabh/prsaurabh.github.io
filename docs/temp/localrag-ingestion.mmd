@@ -1,0 +1,51 @@
+graph LR
+    subgraph Upload["File Upload"]
+        File[PDF / DOCX / TXT / Image]
+    end
+
+    subgraph Extract["Text Extraction"]
+        direction TB
+        Route{Private?}
+        Docling[Docling<br/>→ Markdown]
+        Vision[Bedrock Vision<br/>→ OCR Text]
+        Direct[Direct Read<br/>UTF-8]
+    end
+
+    subgraph Chunk["Chunking"]
+        direction TB
+        Semantic[Semantic<br/>Embedding-based]
+        Spacy[Spacy<br/>Sentence-based]
+        Recursive[Recursive<br/>600 chars]
+    end
+
+    subgraph Store["Storage"]
+        direction TB
+        ChromaPriv[(ChromaDB<br/>Private 768d)]
+        ChromaPub[(ChromaDB<br/>Public 1024d)]
+        BM25Priv[(BM25 Index<br/>Private)]
+        BM25Pub[(BM25 Index<br/>Public)]
+        Schema[Metadata Schema<br/>Auto-extracted]
+    end
+
+    File --> Route
+    Route -->|Yes| Docling
+    Route -->|No + PDF/Image| Vision
+    Route -->|No + TXT| Direct
+    Docling --> Chunk
+    Vision --> Chunk
+    Direct --> Chunk
+    Semantic --> ChromaPriv
+    Semantic --> ChromaPub
+    Spacy --> ChromaPriv
+    Spacy --> ChromaPub
+    Recursive --> ChromaPriv
+    Recursive --> ChromaPub
+    ChromaPriv --> BM25Priv
+    ChromaPub --> BM25Pub
+    ChromaPriv --> Schema
+    ChromaPub --> Schema
+
+    style Upload fill:#1a2332,stroke:#58a6ff,color:#c9d1d9
+    style Extract fill:#1a2332,stroke:#3fb950,color:#c9d1d9
+    style Chunk fill:#1a2332,stroke:#f0883e,color:#c9d1d9
+    style Store fill:#1a2332,stroke:#bc8cff,color:#c9d1d9
