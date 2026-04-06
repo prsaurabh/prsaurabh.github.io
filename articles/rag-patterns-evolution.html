@@ -40,9 +40,7 @@
 
         <p>The traditional RAG pipeline is the foundation everything else builds on. The flow is linear and deterministic: take the user's query, convert it to an embedding vector, search a vector database for the most similar document chunks, pass those chunks as context to an LLM, and return the generated answer. There are no loops, no branching decisions, and no autonomous reasoning. The developer controls the entire path.</p>
 
-        <div class="diagram">
-Query &rarr; Embed &rarr; Vector Search &rarr; Top-K Chunks &rarr; LLM (with context) &rarr; Answer
-        </div>
+        <img src="images/rag-pattern1-traditional.png" alt="Pattern 1: Traditional RAG — linear pipeline from Query through Embed, Vector Search, Top-K Chunks, LLM to Answer" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
         <p>I implemented this pattern in <strong>LocalRAG</strong>, a dual-mode system that runs either against AWS Bedrock (cloud mode) or entirely locally using Ollama (private mode). The project handles PDF, DOCX, TXT, and image files, extracting text through a unified pipeline before chunking and embedding into ChromaDB.</p>
 
@@ -71,14 +69,7 @@ Query &rarr; Embed &rarr; Vector Search &rarr; Top-K Chunks &rarr; LLM (with con
 
         <p>The ReAct (Reason-Act-Observe) pattern hands control to the LLM itself. Instead of following a fixed pipeline, the agent receives a query and autonomously decides what to do: which tool to call, what arguments to pass, whether to search again with different terms, or whether it has enough information to answer. The LLM reasons about its strategy, executes an action, observes the result, and then decides the next step. This loop continues until the agent determines it can produce a final answer.</p>
 
-        <div class="diagram">
-Query &rarr; [ Reason &rarr; Select Tool &rarr; Execute &rarr; Observe ]* &rarr; Answer<br>
-<br>
-Available Tools:<br>
-├── Vector Search (ChromaDB) &mdash; search indexed documents<br>
-├── File Search &mdash; read raw files from disk<br>
-└── Web Search (Tavily) &mdash; search the internet
-        </div>
+        <img src="images/rag-pattern2-react.png" alt="Pattern 2: ReAct Agent — autonomous reasoning loop with tool selection (Vector Search, File Search, Web Search)" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
         <p>I built this pattern using <strong>LlamaIndex's ReAct agent</strong> framework, with three tools available: a vector search tool backed by ChromaDB, a file search tool for direct file access, and a web search tool using Tavily's API. The agent decides which tools to invoke and in what order. A question like "What does the README say about installation?" might trigger the file search tool directly, while "How does this project compare to LangChain's approach?" might involve both vector search (for project details) and web search (for LangChain documentation).</p>
 
@@ -108,15 +99,7 @@ Available Tools:<br>
 
         <p>The orchestrated graph pattern takes a fundamentally different approach from the ReAct agent. Instead of letting the LLM decide the workflow, the developer defines it explicitly as a state machine. The LLM is called at specific nodes to make focused decisions -- route this query, grade this document, check for hallucinations -- but the overall flow is deterministic and controlled. You get the intelligence of LLM-based decisions combined with the predictability of developer-defined logic.</p>
 
-        <div class="diagram">
-                    ┌─────────────────────────────────────────────────┐<br>
-                    │                                                 │<br>
-Query &rarr; Router ─┬─&rarr; Retriever &rarr; Grader ─┬─&rarr; Generator &rarr; Hallucination Check &rarr; END<br>
-                 │                      │<br>
-                 │                      └─&rarr; Rewriter &rarr; Retriever (retry loop)<br>
-                 │<br>
-                 └─&rarr; Web Search &rarr; Generator &rarr; END
-        </div>
+        <img src="images/rag-pattern3-orchestrated.png" alt="Pattern 3: Orchestrated Graph (LangGraph) — developer-defined state machine with Router, Retriever, Grader, Generator, Hallucination Check, Rewriter retry loop, and Web Search fallback" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
         <p>I implemented this using <strong>LangGraph</strong>, which provides a clean abstraction for building stateful, multi-step workflows as directed graphs. Each node in the graph is a function that receives the current state, performs its work (often involving an LLM call), and returns an updated state. Edges between nodes can be conditional, allowing the graph to branch based on LLM decisions or programmatic logic.</p>
 
