@@ -30,35 +30,71 @@
     <div class="content">
 
         <h2>Overview</h2>
-        <p>A LlamaIndex ReAct agent that autonomously reasons about which tools to use for any given query. Unlike a fixed pipeline, the LLM itself drives the decision loop -- Reason, Act, Observe, Repeat -- iterating through available tools until it has gathered enough context to produce a final answer. The agent decides when to search the vector store, grep through files, read full documents, or query the web, all without hard-coded routing logic.</p>
+        <p>A LlamaIndex ReAct agent that autonomously reasons about which tools to use for any given query. Unlike a fixed pipeline, the LLM itself drives the decision loop &mdash; Reason, Act, Observe, Repeat &mdash; iterating through available tools until it has gathered enough context to produce a final answer. The agent decides when to search the vector store, grep through files, read full documents, or query the web, all without hard-coded routing logic.</p>
+
+        <h3>Key Highlights</h3>
+        <ul>
+            <li><strong>ReAct Pattern</strong> &mdash; Autonomous Reason-Act-Observe loop. The LLM drives tool selection, not hardcoded logic.</li>
+            <li><strong>4 Agent Tools</strong> &mdash; Vector search, file search, file read, and web search with priority-based selection.</li>
+            <li><strong>MCP Server</strong> &mdash; Exposes ChromaDB to external clients via stdio (Claude Desktop) and SSE (web).</li>
+            <li><strong>Live Reasoning Traces</strong> &mdash; Streamlit UI shows every tool call and result in real time as the agent thinks.</li>
+            <li><strong>AgentWorkflow API</strong> &mdash; Built on LlamaIndex's latest workflow-based agent, not the deprecated ReActAgent class.</li>
+            <li><strong>Local Embeddings</strong> &mdash; nomic-embed-text-v1.5 runs locally despite using Bedrock for inference. Zero embedding cost.</li>
+        </ul>
 
         <h2>Architecture</h2>
-        <div class="diagram">
-User Query<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-ReAct Agent (Bedrock Claude)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-[Reason] What do I need?<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-[Act] Select Tool:<br>
-&#9500;&#9472;&#9472; vector_search &#8594; ChromaDB<br>
-&#9500;&#9472;&#9472; file_search &nbsp;&nbsp; &#8594; Keyword grep<br>
-&#9500;&#9472;&#9472; file_read &nbsp;&nbsp;&nbsp; &#8594; Full file content<br>
-&#9492;&#9472;&#9472; web_search &nbsp;&nbsp; &#8594; Tavily API<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-[Observe] Process result<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-Loop or Answer
+        <img src="../articles/images/rag-pattern2-react.png" alt="ReAct Agent architecture showing the Reason-Act-Observe loop with tool selection" style="width: 100%; border-radius: 12px; margin: 20px 0;">
+
+        <h2>How the Agent Thinks</h2>
+        <p>The core of this project is not the retrieval &mdash; it is the <strong>decision-making</strong>. The agent's system prompt encodes a priority-ordered tool selection strategy: try vector search first (semantic understanding), fall back to file search (exact terms), use file read for full context, and only hit the web as a last resort. Critically, the prompt includes a rule: <strong>never answer from LLM knowledge alone</strong>. Every response must be grounded in tool results.</p>
+        <p>This means the agent self-corrects. If vector search returns low-relevance results, the agent reasons that it needs a different approach and switches to file grep or web search. If the first tool call is insufficient, it loops again. You can watch this happen in real time through the Streamlit trace panel.</p>
+
+        <h2>Tools</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>vector_search</h3>
+                <div class="card-label">ChromaDB Semantic Search</div>
+                <p>Wraps ChromaDB as a LlamaIndex <strong>QueryEngineTool</strong>. Unlike the MCP server which returns raw chunks, this tool returns <strong>synthesized answers</strong> &mdash; the LLM generates a response from the top-5 retrieved chunks. Best for conceptual questions about document content.</p>
+            </div>
+            <div class="card">
+                <h3>file_search</h3>
+                <div class="card-label">Keyword Grep</div>
+                <p>Regex-based search across .txt and .docx files in the data directory. Case-insensitive, safe for special characters. Results capped at 20 matches to manage context window. Best for exact terms, names, and numbers that embedding similarity might miss.</p>
+            </div>
+            <div class="card">
+                <h3>file_read</h3>
+                <div class="card-label">Full File Content</div>
+                <p>Reads complete file content by filename, truncated at 8,000 characters. Bypasses chunking and embedding entirely &mdash; the agent sees the raw document. Best when the agent needs full context rather than isolated chunks.</p>
+            </div>
+            <div class="card">
+                <h3>web_search</h3>
+                <div class="card-label">Tavily API</div>
+                <p>Real-time web search returning up to 5 results with title, content, and source URL. Gracefully degrades if no API key is configured. The agent's last resort &mdash; used when the answer is not in the local corpus.</p>
+            </div>
         </div>
 
-        <h2>Key Design Decisions</h2>
-        <p><strong>LlamaIndex v0.14 AgentWorkflow</strong> -- Built on the latest AgentWorkflow API rather than the deprecated ReActAgent class. This provides a cleaner interface for defining tools and handling the agent loop with proper async support.</p>
-        <p><strong>BedrockConverse for async streaming</strong> -- Uses the BedrockConverse LLM adapter which supports async streaming natively, enabling real-time token-by-token output in the Streamlit frontend as the agent reasons through its steps.</p>
-        <p><strong>Local embeddings</strong> -- Despite using Bedrock for inference, embeddings are generated locally with nomic-embed-text via Ollama. This keeps the embedding layer consistent across projects and avoids per-query embedding costs.</p>
-        <p><strong>Priority-based system prompt</strong> -- The agent's system prompt establishes a clear tool priority order: vector search first, then file search, then file read, with web search as a fallback. This guides the agent toward the most efficient retrieval path without hard-coding the logic.</p>
+        <h2>Two Access Paths</h2>
+        <p>The system provides two fundamentally different ways to access the knowledge base, each with different behavior:</p>
+        <p><strong>Through the ReAct agent</strong> (Streamlit UI or CLI): The agent reasons about the query, selects tools, and the vector_search tool returns <strong>synthesized answers</strong> via LlamaIndex's query engine. The LLM processes retrieved chunks and generates a coherent response before the agent even sees it.</p>
+        <p><strong>Through the MCP server</strong> (Claude Desktop or any MCP client): Direct access to ChromaDB returning <strong>raw chunks with similarity scores</strong>. No agent reasoning, no synthesis &mdash; the client LLM handles interpretation. Supports both stdio transport (for Claude Desktop) and SSE transport (for web clients).</p>
+        <p>This dual-path design means the knowledge base is useful both as an autonomous agent and as a composable tool for other AI systems.</p>
 
-        <h2>MCP Server</h2>
-        <p>The project includes a Model Context Protocol (MCP) server that exposes ChromaDB as a set of tools for external clients. Two tools are provided: <strong>search_documents</strong> for semantic vector search and <strong>list_documents</strong> for browsing the document collection. The server supports both stdio and SSE transport, making it compatible with Claude Desktop and other MCP-aware clients that need access to the project's knowledge base.</p>
+        <h2>Reasoning Trace Visualization</h2>
+        <p>The Streamlit UI does not just show the final answer &mdash; it streams the agent's entire reasoning process in a sidebar panel. Every tool call, every tool result (truncated to 500 characters), and every reasoning step is visible in real time. This makes the ReAct loop <strong>observable</strong>, not a black box. You can see exactly why the agent chose vector search over file search, and what it found at each step.</p>
+
+        <h2>Key Design Decisions</h2>
+        <p><strong>LlamaIndex AgentWorkflow (v0.14)</strong> &mdash; Built on the latest workflow-based agent API rather than the deprecated ReActAgent class. This provides a cleaner interface for defining tools and handling the agent loop with proper async support and event streaming.</p>
+        <p><strong>BedrockConverse for async streaming</strong> &mdash; Uses the BedrockConverse LLM adapter which supports async streaming natively, enabling real-time token-by-token output as the agent reasons through its steps.</p>
+        <p><strong>Local embeddings, cloud inference</strong> &mdash; Despite using Bedrock Claude for reasoning, embeddings are generated locally with nomic-embed-text-v1.5 via HuggingFace. This keeps the embedding layer consistent with <a href="local-rag-deep-dive.html">VaultRAG</a> and eliminates per-query embedding costs.</p>
+        <p><strong>Priority-based system prompt</strong> &mdash; The system prompt establishes a clear tool priority order and a hard rule against answering from LLM knowledge alone. This guides the agent toward the most efficient retrieval path without hard-coding the logic in application code.</p>
+
+        <h2>Relationship to VaultRAG</h2>
+        <p>This project is the <strong>agentic evolution</strong> of <a href="local-rag-deep-dive.html">VaultRAG</a>, which implements traditional RAG with hybrid retrieval. Both projects use the same embedding model (nomic-embed-text-v1.5) by design, but share zero code and use different frameworks:</p>
+        <ul>
+            <li><strong>VaultRAG</strong>: LangChain, dual-mode (local + cloud), hybrid retrieval (vector + BM25 + metadata), multimodal</li>
+            <li><strong>This project</strong>: LlamaIndex, cloud-only inference, single semantic search, but with autonomous tool selection</li>
+        </ul>
+        <p>The trade-off is clear: VaultRAG gives you a more sophisticated retrieval engine. This project gives you a more intelligent query handler. See <a href="../articles/rag-patterns-evolution.html">Evolution of RAG</a> for the full comparison of both patterns.</p>
 
         <h2>Metrics</h2>
         <div class="metrics">
@@ -69,6 +105,10 @@ Loop or Answer
             <div class="metric">
                 <div class="number">ReAct</div>
                 <div class="label">Reasoning Pattern</div>
+            </div>
+            <div class="metric">
+                <div class="number">2</div>
+                <div class="label">Access Paths</div>
             </div>
             <div class="metric">
                 <div class="number">MCP</div>
@@ -88,8 +128,10 @@ Loop or Answer
             <span class="tag">Python</span>
         </div>
 
-        <div>
+        <div style="margin-top: 24px;">
             <a href="https://github.com/prsaurabh/agentic-rag-react" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="local-rag-deep-dive.html" class="btn btn-primary">VaultRAG Deep Dive</a>
+            <a href="../articles/rag-patterns-evolution.html" class="btn btn-primary">Evolution of RAG Article</a>
             <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
         </div>
 
@@ -100,5 +142,6 @@ Loop or Answer
     Saurabh Prasad - New York, NY
 </footer>
 
+<script src="../js/theme.js"></script>
 </body>
 </html>
