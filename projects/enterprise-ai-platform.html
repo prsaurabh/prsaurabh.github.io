@@ -29,36 +29,36 @@
     <div class="content">
 
         <h2>Overview</h2>
-        <p>Owned the technical strategy and architecture for an enterprise AI platform &mdash; the centralized operating system for how the entire organization consumes Generative AI. Replaced fragmented vendor integrations with a unified, governed platform and standardized integration model. Designed core abstractions, governance boundaries, and runtime capabilities that enabled product teams to independently build, deploy, and operate RAG systems, agents, and AI workflows.</p>
-        <p>The platform serves as intelligent middleware between applications and AI providers (AWS Bedrock, Azure OpenAI), offering capabilities via REST API, SDK (npm, NuGet, PyPI), and MCP servers. Got involved early and built both the platform and the team over time. Drove enterprise AI adoption through events, articles, and hackathons.</p>
+        <p>Owned the technical strategy and architecture for an enterprise AI platform &mdash; the centralized operating system for how the entire organization consumes Generative AI. Replaced fragmented vendor integrations across 5 business units with a unified, governed platform. Every LLM call across the enterprise flows through this platform &mdash; from simple completions to multi-agent workflows.</p>
+        <p>The core design principle is <strong>configuration over code</strong>: teams change AI behavior &mdash; models, prompts, safety settings, RAG parameters, tool connections &mdash; through a self-service portal without redeploying their applications. This is what makes it a platform, not just an API wrapper.</p>
 
         <h3>Key Highlights</h3>
         <ul>
-            <li><strong>RAG-as-a-Service</strong> &mdash; Decomposed, agent-based RAG pipeline available via REST API, SDK, and MCP with prebuilt templates.</li>
-            <li><strong>Agent Marketplace + MCP</strong> &mdash; Dynamic agent discovery across C#, Python, and Java runtimes with central authorization.</li>
-            <li><strong>Model Abstraction</strong> &mdash; Dynamic routing, failover, and A/B testing across Azure OpenAI, AWS Bedrock, and local models.</li>
-            <li><strong>Guardrails</strong> &mdash; Llama Guard 3 Vision and Nemo Guardrails for content moderation, PII redaction, and compliance.</li>
-            <li><strong>Cost Optimization</strong> &mdash; Semantic caching, rate limiting, KV cache tuning, and local model fallbacks.</li>
-            <li><strong>Observability</strong> &mdash; OpenTelemetry backbone with Prometheus, Grafana, LangSmith, and token-level cost monitoring.</li>
+            <li><strong>Agent Framework</strong> &mdash; Self-contained AI execution units bundling LLM, tools, safety, and instructions. Invoke with a single ID. The primary execution model.</li>
+            <li><strong>Universal Tool Catalog</strong> &mdash; 4 tool types (RAG, MCP, OpenAPI, Agent) in one registry. Agents compose tools regardless of type.</li>
+            <li><strong>Safety as Architectural Invariant</strong> &mdash; Every API request MUST reference a Safety Setting. No unguarded path. Dual-provider defense-in-depth.</li>
+            <li><strong>RAG-as-a-Service</strong> &mdash; Fully managed pipeline with LLM-driven retrieval &mdash; the model decides when to search, not every prompt.</li>
+            <li><strong>MCP-First Integration</strong> &mdash; Early adoption of Model Context Protocol as standard tool layer, before it became the industry default.</li>
+            <li><strong>Configuration Over Code</strong> &mdash; Prompts, models, safety, RAG, workflows &mdash; all portal-managed. 25+ apps change behavior without redeploying.</li>
         </ul>
 
         <h2>Impact</h2>
         <div class="metrics">
             <div class="metric">
+                <div class="number">25+</div>
+                <div class="label">Production Applications</div>
+            </div>
+            <div class="metric">
+                <div class="number">100K+</div>
+                <div class="label">Daily Requests</div>
+            </div>
+            <div class="metric">
                 <div class="number">8+</div>
-                <div class="label">Product Teams Adopted</div>
+                <div class="label">Product Teams</div>
             </div>
             <div class="metric">
-                <div class="number">23</div>
-                <div class="label">Active AI Applications</div>
-            </div>
-            <div class="metric">
-                <div class="number">40%</div>
-                <div class="label">Integration Overhead Reduced</div>
-            </div>
-            <div class="metric">
-                <div class="number">50%</div>
-                <div class="label">Faster Development Cycles</div>
+                <div class="number">5</div>
+                <div class="label">Business Units</div>
             </div>
             <div class="metric">
                 <div class="number">35%</div>
@@ -73,60 +73,51 @@
         <h2>Platform Architecture</h2>
         <img src="images/enterprise-platform-architecture.png" alt="Enterprise AI Platform layered architecture showing Applications, Consumption Layer, AI Platform Core, Services, Administration, and LLM Providers" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
-        <h2>Platform Capabilities</h2>
+        <h2>Core Capabilities</h2>
 
-        <h3>Model Access &amp; Intelligent Routing</h3>
+        <h3>Agent Framework</h3>
+        <p>The primary execution model. An Agent bundles an LLM, system instructions, tools, safety settings, and temperature into one deployable configuration. Consumers invoke with a single <code>agentId</code> &mdash; the LLM autonomously decides which tools to call based on the query. The Response Format feature converts JSON Schema to system prompt instructions at runtime, creating typed data contracts for reliable agent-to-agent chaining.</p>
+
+        <h3>Universal Tool Catalog</h3>
+        <p>The most consequential architectural decision. A single registry holding 4 tool types &mdash; <strong>RAG</strong>, <strong>MCP Server</strong>, <strong>OpenAPI</strong>, and <strong>Agent</strong> &mdash; discoverable and attachable through one configuration surface. Agents consume tools regardless of type. New tool types can be added without changing how agents work. Registration in the portal is the governance gate.</p>
         <ul>
-            <li><strong>Dynamic Model Routing</strong> — intelligently routes requests to optimal models based on task requirements, cost, and performance</li>
-            <li><strong>Provider Abstraction</strong> — unified API normalizing differences between AWS Bedrock, Azure OpenAI, and open-source models</li>
-            <li><strong>High-Availability Failover</strong> — automatic rerouting when a provider experiences degradation</li>
-            <li><strong>A/B Testing &amp; Monitoring</strong> — controlled rollout of new models with benchmarking against existing ones</li>
+            <li><strong>MCP Servers</strong> &mdash; custom TypeScript servers bundled as hermetic single-file deployments, plus remote servers with API key auth</li>
+            <li><strong>OpenAPI Tools</strong> &mdash; upload a spec, configure base URL and headers, LLM calls endpoints autonomously. No server code needed.</li>
+            <li><strong>Agent-to-Agent</strong> &mdash; agents registered as tools. Any agent can invoke any other agent &mdash; recursive composition to arbitrary depth.</li>
         </ul>
 
         <h3>RAG-as-a-Service</h3>
-        <p>A decomposed, agent-based RAG pipeline offered via REST API, SDK, MCP, and a pipeline builder UI with prebuilt templates.</p>
+        <p>Fully managed pipeline: upload &rarr; chunk (configurable strategy/size/overlap) &rarr; embed &rarr; vector store &rarr; query-time retrieval &rarr; LLM response. The key difference: <strong>LLM-driven retrieval</strong> means the model decides when to search based on the query, not every prompt. Two-tier filtering: static defaults plus runtime tags and metadata.</p>
         <img src="images/enterprise-rag-pipeline.png" alt="RAG-as-a-Service pipeline showing 9 stages from Query Classifier through Retriever, Grader, Context Builder, Generator, Evaluator, Self-Reflection, Fallback Handler, to Audit" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
-        <h3>Agent Marketplace &amp; MCP</h3>
-        <ul>
-            <li><strong>Agent Marketplace</strong> — inspired by Agent.ai &amp; n8n, agents available as services, SDKs, and MCP servers</li>
-            <li><strong>MCP Registry</strong> — dynamic agent discovery across C# (Semantic Kernel, AutoGen), Python (LangChain, LangGraph), and Java (AWS Bedrock) runtimes</li>
-            <li><strong>Central Authorization</strong> — Okta adapter for JSON-RPC/SSE MCP connections with OAuth2 support</li>
-            <li><strong>Hierarchical Chaining</strong> — MCP agent chaining for data and tools aggregation across systems</li>
-            <li><strong>Document Processing, Knowledge Base, Multi-modal, and Orchestration agents</strong></li>
-        </ul>
+        <h3>Workflow Orchestration</h3>
+        <p>Multi-agent DAG (directed acyclic graph) with 4 step types: <strong>Trigger</strong> (manual API or scheduled), <strong>Agent</strong> (invoke any registered agent), <strong>Filter</strong> (conditional branching via JSON path evaluation), and <strong>Notification</strong> (email delivery). Filter steps enable fan-out with predicate guards. Full step-level input/output traceability.</p>
 
-        <h3>Prompt &amp; Memory Management</h3>
-        <ul>
-            <li><strong>Centralized Prompt Library</strong> — governance-controlled, versioned, structured prompts with chaining and caching</li>
-            <li><strong>Context-Aware Memory</strong> — intelligently compresses and reuses chat history within context windows</li>
-            <li><strong>Dynamic KV Cache Tuning</strong> — agent module that identifies tokenizer, fetches model token limits, adjusts chunk size/overlap, and tunes retrieval parameters per model</li>
-        </ul>
+        <h3>Model Routing &amp; AI Gateway</h3>
+        <p>Every LLM call across the enterprise flows through the platform. Multi-provider abstraction (AWS Bedrock + Azure OpenAI) means model swapping is a config change, not a code change. Dynamic routing based on task, cost, and performance. High-availability failover. A/B testing for controlled model rollouts.</p>
 
-        <h3>Guardrails &amp; Compliance</h3>
-        <ul>
-            <li><strong>Custom Guardrails</strong> — Llama Guard 3 Vision and Nemo Guardrails for content moderation, hallucination prevention, and bias detection</li>
-            <li><strong>Real-Time PII Redaction</strong> — flags and redacts sensitive data before reaching end-users</li>
-            <li><strong>Role-Based AI Access Control</strong> — permissions at team, user, and workload level with SSO, API keys, OAuth, and IAM</li>
-            <li><strong>Regulatory Compliance</strong> — HIPAA, GDPR, California SB 1047, EO 14100 with safety testing and watermarking</li>
-            <li><strong>Audit Trail</strong> — tracks who, what, and why behind every AI decision</li>
-        </ul>
+        <h3>Prompt Management</h3>
+        <p>Versioned prompt settings with <strong>ceiling-based semver resolution</strong>: clients request a max version, the platform resolves the latest at or below. Prompt engineers publish without client redeployment. Instant rollback. Template variables for runtime data, RAG content, and platform-injected context.</p>
+
+        <h3>Safety &amp; Compliance</h3>
+        <p>An architectural invariant, not a developer option. Every API request MUST reference a Safety Setting &mdash; there is no unguarded path. <strong>Dual-provider defense-in-depth</strong>: AWS Guardrails (policy-based) + Azure AI Content Safety (ML-based). Bidirectional filtering on both inputs and outputs. Fair housing regulation compliance baked into the default system prompt &mdash; a legal requirement in real estate.</p>
+
+        <h3>Streaming &amp; Real-Time</h3>
+        <p>SSE-based streaming with 5 event types: <code>chunk</code>, <code>tool_request</code>, <code>tool_response</code>, <code>complete</code>, <code>error</code>. The full tool-use lifecycle is visible in real time &mdash; consumers can show users what the agent is doing as it works.</p>
 
         <h3>Cost Optimization</h3>
         <ul>
-            <li><strong>Semantic Caching</strong> — caches frequently queried responses to reduce API calls and latency</li>
-            <li><strong>Intelligent Rate Limiting</strong> — dynamically scales down non-critical requests to prevent excessive token burn</li>
-            <li><strong>Batch Processing &amp; Parallel Execution</strong> — aggregates requests into concurrent processing pipelines</li>
-            <li><strong>Local Model Fallbacks</strong> — reduces cloud dependency for suitable workloads</li>
-            <li><strong>Token-by-Token Streaming</strong> — optimized for real-time interactions with minimal delay</li>
+            <li><strong>Semantic Caching</strong> &mdash; caches frequently queried responses to reduce API calls and latency</li>
+            <li><strong>Dynamic KV Cache Tuning</strong> &mdash; identifies tokenizer per model, adjusts chunk size/overlap/strategy, tunes retrieval parameters automatically</li>
+            <li><strong>Intelligent Rate Limiting</strong> &mdash; scales down non-critical requests to prevent excessive token burn</li>
+            <li><strong>Experiments Playground</strong> &mdash; side-by-side comparison of up to 4 models with actual token usage and cost after execution</li>
         </ul>
 
-        <h3>Observability &amp; Analytics</h3>
+        <h3>Observability</h3>
         <ul>
-            <li><strong>OpenTelemetry Backbone</strong> — end-to-end observability across all agent runtimes and pipelines regardless of tech stack</li>
-            <li><strong>Metrics &amp; Logs</strong> — Prometheus/Grafana for metrics, Loki for logs</li>
-            <li><strong>AI-Specific Analytics</strong> — LangSmith/LangFuse for response evaluation, drift detection, and model benchmarking</li>
-            <li><strong>Cost &amp; Token Monitoring</strong> — tracks consumption across models and departments with predictive cost alerts</li>
+            <li><strong>OpenTelemetry Backbone</strong> &mdash; end-to-end across all agent runtimes regardless of tech stack</li>
+            <li><strong>Prometheus/Grafana</strong> for metrics, <strong>Loki</strong> for logs, <strong>LangSmith/LangFuse</strong> for AI-specific evaluation</li>
+            <li><strong>Token &amp; Cost Monitoring</strong> &mdash; per-model, per-department consumption tracking with predictive cost alerts</li>
         </ul>
 
         <h2>Award-Winning Products Built on This Platform</h2>
@@ -190,8 +181,9 @@
             <li><strong>Platform Evangelism</strong> — drove adoption through events, articles, hackathons, and targeted PoCs that demonstrated tangible value</li>
         </ul>
 
-        <div style="margin-top: 32px;">
-            <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
+        <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="enterprise-ai-deep-dive.html" class="btn btn-accent">Architecture Deep Dive</a>
+            <a href="../experience.html" class="btn btn-primary">Back to Experience</a>
         </div>
 
     </div>
