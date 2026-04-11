@@ -1,5 +1,14 @@
 # CLAUDE.md
 
+## ACTIVE CORRECTIONS (remove when resolved)
+- **Project/article titles must be 4-5 words** — not 1-2 word brand names, not full sentences. Think GitHub repo style but slightly longer.
+- **Do NOT reuse the old name** when renaming something — that's the whole point of renaming.
+- **Do NOT expand abbreviations in titles** — "RAG" is enough, never write "Retrieval-Augmented Generation" in a title.
+- **Read the last 5+ messages before answering** — user has been correcting the same mistake repeatedly. Stop and re-read before responding.
+- **Titles should capture what makes the project unique** — not generic descriptions. Focus on the differentiators (local/offline, privacy, multimodal, dual-mode).
+- **Figma diagrams: NO black/very dark backgrounds** — use lighter dark backgrounds (e.g., r:0.14, g:0.16, b:0.2) so they're visible on the dark-themed website. Text must be clearly readable.
+- **Each project page is independent** — do not assume the reader has seen other projects. Every page must make sense on its own without cross-references being required to understand the basics.
+
 ## Project
 This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior Staff Software Engineer. Pure static HTML/CSS, no build system.
 
