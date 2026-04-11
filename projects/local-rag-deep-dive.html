@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalRAG Deep Dive | Saurabh Prasad</title>
+    <title>VaultRAG Deep Dive | Saurabh Prasad</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
     /* ============================================
-       LocalRAG Deep Dive — Page-Specific Styles
+       VaultRAG Deep Dive — Page-Specific Styles
        ============================================ */
 
     html { scroll-behavior: smooth; }
@@ -224,7 +224,7 @@
         font-size: 0.65rem;
         font-weight: 700;
         color: var(--accent-blue);
-        background: #1a2332;
+        background: var(--bg-tertiary);
         width: 22px; height: 22px; line-height: 22px;
         border-radius: 50%;
         margin: 0 auto 6px;
@@ -339,7 +339,7 @@
     .dd-module-tech {
         font-size: 0.7rem;
         color: var(--accent-blue);
-        background: #1a2332;
+        background: var(--bg-tertiary);
         padding: 2px 10px;
         border-radius: 12px;
         margin-left: auto;
@@ -397,8 +397,8 @@
 
     /* -- Infra Callout -- */
     .dd-callout {
-        background: #1a2332;
-        border: 1px solid #1f3a5f;
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
         border-left: 3px solid var(--accent-blue);
         border-radius: 6px;
         padding: 16px 20px;
@@ -506,7 +506,7 @@
 
 <!-- ======== Hero ======== -->
 <div class="dd-hero">
-    <h1>LocalRAG &mdash; Technical Deep Dive</h1>
+    <h1>VaultRAG &mdash; Technical Deep Dive</h1>
     <p class="dd-subtitle">Complete architecture analysis of a dual-mode RAG system with hybrid search</p>
     <div class="dd-hero-metrics">
         <span class="dd-pill"><strong>2</strong> Operating Modes</span>
@@ -546,10 +546,10 @@
         <div class="dd-chapter" id="overview">
             <div class="dd-chapter-num">01</div>
             <h2 class="dd-chapter-title">Overview</h2>
-            <p class="dd-chapter-desc">What LocalRAG does and how it's built</p>
+            <p class="dd-chapter-desc">What VaultRAG does and how it's built</p>
         </div>
 
-        <p><strong>LocalRAG</strong> (branded "DocuAssist" in the API) is a production-ready Retrieval-Augmented Generation system with dual-mode operation. Public mode uses AWS Bedrock (Claude 3 Haiku, Titan Embeddings, Cohere Vision) for cloud-powered inference. Private mode runs entirely local with Ollama, ensuring zero data leaves the machine.</p>
+        <p><strong>VaultRAG</strong> (branded "DocuAssist" in the API) is a production-ready Retrieval-Augmented Generation system with dual-mode operation. Public mode uses AWS Bedrock (Claude 3 Haiku, Titan Embeddings, Cohere Vision) for cloud-powered inference. Private mode runs entirely local with Ollama, ensuring zero data leaves the machine.</p>
         <p>The system implements <strong>hybrid search</strong> combining dense vector similarity (ChromaDB) with sparse keyword matching (BM25) via a weighted ensemble. It handles text and image documents through a unified extraction pipeline, supports three chunking strategies, provides intelligent conversation memory (Mem0 + sliding window), and includes PII protection via Microsoft Presidio.</p>
         <p>Built with <strong>FastAPI</strong> on the backend and <strong>Next.js 14</strong> on the frontend, deployed via Docker to AWS EC2 with a GitHub Actions CI/CD pipeline.</p>
 
@@ -590,7 +590,7 @@
         <p>The backend is organized into five module layers: <strong>Core</strong> (config, caching, prompts, Bedrock client), <strong>Data Loading</strong> (text extraction, OCR, chunking, indexing), <strong>Retrieval</strong> (hybrid search, metadata extraction), <strong>Generation</strong> (LLM generation, memory, PII), and <strong>API</strong> (FastAPI routes and Pydantic models).</p>
 
         <div class="dd-diagram">
-            <img src="../docs/temp/localrag-overview.svg" alt="LocalRAG system architecture showing Frontend, API, Ingestion, Storage, Retrieval, Generation, and Provider subsystems">
+            <img src="images/localrag-overview.png" alt="LocalRAG system architecture showing document ingestion, multimodal, query and generation flows">
             <div class="dd-diagram-caption">Figure 1 &mdash; High-level system architecture</div>
         </div>
 
@@ -616,11 +616,6 @@
             <div class="dd-step"><div class="dd-step-num">5</div><h4>Store</h4><p>ChromaDB<br>+ BM25 Index</p></div>
         </div>
 
-        <div class="dd-diagram">
-            <img src="../docs/temp/localrag-ingestion.svg" alt="Ingestion pipeline flow from file upload through text extraction, chunking, embedding, to storage">
-            <div class="dd-diagram-caption">Figure 2 &mdash; Ingestion pipeline detail</div>
-        </div>
-
         <h3>Retrieval Pipeline</h3>
         <p>Queries go through optional <strong>metadata extraction</strong> (Bedrock LLM or Spacy NLP) to produce a filter, then hit a three-retriever ensemble:</p>
 
@@ -635,17 +630,12 @@
         </div>
 
         <div class="dd-diagram">
-            <img src="../docs/temp/localrag-retrieval.svg" alt="Retrieval pipeline showing metadata extraction feeding into hybrid ensemble search">
+            <img src="images/localrag-retrieval.png" alt="Retrieval pipeline showing metadata extraction feeding into hybrid ensemble search">
             <div class="dd-diagram-caption">Figure 3 &mdash; Hybrid retrieval with ensemble scoring</div>
         </div>
 
         <h3>Generation Pipeline</h3>
         <p>Retrieved context is combined with <strong>conversation history</strong> (Mem0 semantic search or sliding window) and an output-primed prompt template. The prompt ends with <code>"Answer: The"</code> to force direct responses without preambles.</p>
-
-        <div class="dd-diagram">
-            <img src="../docs/temp/localrag-generation.svg" alt="Generation pipeline showing memory retrieval, prompt assembly, and LLM generation">
-            <div class="dd-diagram-caption">Figure 4 &mdash; Generation with memory integration</div>
-        </div>
 
         <!-- ======== 04 Dual Mode ======== -->
         <div class="dd-chapter" id="dual-mode">
@@ -706,7 +696,7 @@
         </div>
 
         <div class="dd-diagram">
-            <img src="../docs/temp/localrag-dual-mode.svg" alt="Dual mode architecture showing complete component isolation between Private and Public paths">
+            <img src="images/localrag-dual-mode.png" alt="Dual mode architecture showing complete component isolation between Private and Public paths">
             <div class="dd-diagram-caption">Figure 5 &mdash; Mode-specific component selection</div>
         </div>
 
@@ -941,33 +931,20 @@
         <div class="dd-doc-grid">
             <div class="dd-doc-card">
                 <h4>System Overview</h4>
-                <p>High-level: Frontend, API, Ingestion, Storage, Retrieval, Generation, Providers.</p>
-                <a href="../docs/temp/localrag-overview.svg" target="_blank">View SVG &rarr;</a>
-            </div>
-            <div class="dd-doc-card">
-                <h4>Ingestion Pipeline</h4>
-                <p>Upload through extraction, chunking, embedding, to ChromaDB + BM25 storage.</p>
-                <a href="../docs/temp/localrag-ingestion.svg" target="_blank">View SVG &rarr;</a>
+                <p>High-level: Ingestion, Multimodal, Retrieval, Generation, and Dual Mode flows.</p>
             </div>
             <div class="dd-doc-card">
                 <h4>Retrieval Pipeline</h4>
                 <p>Query through metadata extraction to weighted ensemble hybrid search.</p>
-                <a href="../docs/temp/localrag-retrieval.svg" target="_blank">View SVG &rarr;</a>
             </div>
             <div class="dd-doc-card">
-                <h4>Generation Pipeline</h4>
-                <p>Memory retrieval, prompt assembly, LLM generation with mode routing.</p>
-                <a href="../docs/temp/localrag-generation.svg" target="_blank">View SVG &rarr;</a>
-            </div>
-            <div class="dd-doc-card">
-                <h4>Dual Mode</h4>
+                <h4>Dual Mode Architecture</h4>
                 <p>Complete component isolation between Private and Public paths.</p>
-                <a href="../docs/temp/localrag-dual-mode.svg" target="_blank">View SVG &rarr;</a>
             </div>
         </div>
 
         <div style="margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="https://github.com/prsaurabh/LocalRAG" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="https://github.com/prsaurabh/VaultRAG-local2cloud" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
             <a href="local-rag.html" class="btn btn-primary">Simple Project Page</a>
             <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
         </div>
@@ -991,5 +968,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="../js/theme.js"></script>
 </body>
 </html>
