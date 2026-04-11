@@ -30,42 +30,75 @@
     <div class="content">
 
         <h2>Overview</h2>
-        <p>A LangGraph state machine where the developer explicitly defines the execution flow. Unlike the ReAct approach where the LLM decides what to do next, here the graph controls routing between nodes. Each node calls the LLM for a specific, scoped task -- classify, grade, rewrite, generate -- but the transitions between nodes are deterministic and developer-defined. The system includes self-correction through document grading and query rewriting, ensuring answer quality without unbounded agent loops.</p>
+        <p>A LangGraph state machine where the developer explicitly defines the execution flow. Unlike the <a href="agentic-rag-react.html">ReAct approach</a> where the LLM decides what to do next, here the graph controls routing between nodes. Each node calls the LLM for a specific, scoped task &mdash; classify, grade, rewrite, generate &mdash; but the transitions between nodes are deterministic and developer-defined. The system includes self-correction through document grading and query rewriting, ensuring answer quality without unbounded agent loops.</p>
+
+        <h3>Key Highlights</h3>
+        <ul>
+            <li><strong>Developer-Controlled Flow</strong> &mdash; LangGraph state machine with deterministic transitions. LLM makes focused decisions, not open-ended reasoning.</li>
+            <li><strong>Relevance Grading</strong> &mdash; Dedicated LLM node evaluates whether retrieved documents are actually relevant before generation.</li>
+            <li><strong>Hallucination Detection</strong> &mdash; Post-generation verification gate checks if the answer is grounded in the retrieved context.</li>
+            <li><strong>Self-Correcting Retrieval</strong> &mdash; Query rewriting with bounded retry loops (max 2) when documents fail grading.</li>
+            <li><strong>Full Execution Trace</strong> &mdash; Every node records its decision to a trace log, visible in the Streamlit UI sidebar.</li>
+            <li><strong>Graceful Degradation</strong> &mdash; When retries are exhausted, generates with whatever documents are available rather than failing.</li>
+        </ul>
 
         <h2>Architecture</h2>
-        <div class="diagram">
-START<br>
-&nbsp;&nbsp;&#8595;<br>
-Router (LLM classifies: vectorstore or web_search)<br>
-&nbsp;&nbsp;&#8595;<br>
-Retriever (ChromaDB or Tavily)<br>
-&nbsp;&nbsp;&#8595;<br>
-Grader (LLM: are docs relevant?)<br>
-&nbsp;&nbsp;&#9500;&#9472;&#9472; Yes &#8594; Generator (LLM synthesizes answer)<br>
-&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hallucination Check (LLM: is answer faithful?)<br>
-&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9500;&#9472;&#9472; Yes &#8594; END<br>
-&nbsp;&nbsp;&#9474;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472;&#9472; No &#8594; Generator (retry, max 1)<br>
-&nbsp;&nbsp;&#9492;&#9472;&#9472; No &#8594; Rewriter (LLM rewrites query)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8595;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retriever (loop, max 2 retries)
+        <img src="../articles/images/rag-pattern3-orchestrated.png" alt="Orchestrated Graph architecture showing Router, Retriever, Grader, Generator, Hallucination Check, Rewriter retry loop, and Web Search fallback" style="width: 100%; border-radius: 12px; margin: 20px 0;">
+
+        <h2>How the Graph Works</h2>
+        <p>The graph is a <strong>LangGraph StateGraph</strong> compiled once at startup. A shared <code>GraphState</code> (TypedDict) flows through every node, carrying the query, documents, answer, trace log, and retry counters. Two conditional edge functions control branching: <code>_after_grader</code> routes to generator, rewriter, or force-generates after max retries; <code>_after_hallucination_check</code> accepts the answer or triggers regeneration.</p>
+        <p>Each node has a dedicated prompt tuned for its specific task. The LLM temperatures vary by node: <strong>0.0</strong> for Router, Grader, and Hallucination Check (deterministic decisions), <strong>0.3</strong> for Generator (controlled creativity), and <strong>0.5</strong> for Rewriter (encourages creative rephrasing).</p>
+
+        <h2>6 Nodes, 5 LLM Calls</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>Router</h3>
+                <div class="card-label">LLM &bull; Temperature 0.0</div>
+                <p>Classifies the query as requiring vector store retrieval or web search. Explicit prompt: vectorstore is ONLY for internal/corporate documents; everything else routes to web. When in doubt, chooses web search.</p>
+            </div>
+            <div class="card">
+                <h3>Retriever</h3>
+                <div class="card-label">No LLM Call</div>
+                <p>Fetches top-5 documents from ChromaDB (vector search) or Tavily (web search) based on the Router's decision. Transparently uses the rewritten query if one exists from a retry loop.</p>
+            </div>
+            <div class="card">
+                <h3>Grader</h3>
+                <div class="card-label">LLM &bull; Temperature 0.0</div>
+                <p>Evaluates retrieved documents as a whole &mdash; if at least some are relevant, it passes. Short-circuits to "irrelevant" without an LLM call if no documents were retrieved at all.</p>
+            </div>
+            <div class="card">
+                <h3>Rewriter</h3>
+                <div class="card-label">LLM &bull; Temperature 0.5</div>
+                <p>Rewrites the query to improve retrieval on retry. Uses higher temperature to encourage creative rephrasing. Builds on the previously rewritten query if one exists, not always the original.</p>
+            </div>
+            <div class="card">
+                <h3>Generator</h3>
+                <div class="card-label">LLM &bull; Temperature 0.3</div>
+                <p>Synthesizes an answer from retrieved context. Strict prompt: "Answer using ONLY the provided context. Do NOT make up information." If no documents exist, still produces an honest "not enough information" response.</p>
+            </div>
+            <div class="card">
+                <h3>Hallucination Check</h3>
+                <div class="card-label">LLM &bull; Temperature 0.0</div>
+                <p>Verifies the generated answer is grounded in the documents. Nuanced definition: correctly saying "I don't know" counts as faithful. Only fabricating specific facts counts as hallucination. Skipped entirely if no documents exist.</p>
+            </div>
         </div>
 
         <h2>Self-Correction Loops</h2>
         <p>The graph implements two distinct self-correction mechanisms, each with bounded retries to prevent infinite loops:</p>
-        <p><strong>Grader-Rewriter Loop (max 2 retries)</strong> -- After retrieval, the Grader node asks the LLM whether the retrieved documents are relevant to the query. If the documents are judged irrelevant, the Rewriter node rewrites the query to improve retrieval, and the system loops back to the Retriever. This can happen at most twice. After two failed attempts, the graph forces generation with whatever documents are available rather than looping indefinitely.</p>
-        <p><strong>Hallucination-Regeneration Loop (max 1 retry)</strong> -- After the Generator produces an answer, the Hallucination Check node asks the LLM whether the answer is faithful to the retrieved documents. If the answer is flagged as hallucinated, the Generator runs once more with the same context. After one retry, the graph accepts the output and terminates. This prevents the system from endlessly regenerating while still catching obvious hallucinations.</p>
+        <p><strong>Grader-Rewriter Loop (max 2 retries)</strong> &mdash; If documents are judged irrelevant, the Rewriter rewrites the query and the system loops back to the Retriever. After two failed attempts, the graph forces generation with whatever documents are available rather than looping indefinitely.</p>
+        <p><strong>Hallucination-Regeneration Loop (max 1 retry)</strong> &mdash; If the answer is flagged as hallucinated, the Generator runs once more with the same context. After one retry, the graph accepts the output. This catches obvious hallucinations without endless regeneration.</p>
 
-        <h2>6 Nodes, 5 LLM Calls</h2>
-        <p>The graph consists of six nodes, five of which invoke the LLM for distinct tasks:</p>
+        <h2>Execution Trace &amp; Observability</h2>
+        <p>Every node appends its decisions to a <code>trace</code> field in the graph state. The Streamlit UI renders this trace in a sidebar with distinct visual treatment per node &mdash; icons, colors, and expandable details. You can see exactly which path the graph took, why the grader passed or failed, whether the rewriter was invoked, and whether the hallucination check caught anything. The trace makes this pipeline fully <strong>debuggable</strong>, not a black box.</p>
+
+        <h2>Relationship to the RAG Portfolio</h2>
+        <p>This is the third pattern in a trilogy, each using the <strong>same embedding model</strong> (nomic-embed-text-v1.5) and <strong>same LLM</strong> (Bedrock Claude 3 Haiku) to isolate the architectural pattern as the variable:</p>
         <ul>
-            <li><strong>Router</strong> -- LLM classifies the query as requiring vector store retrieval or web search.</li>
-            <li><strong>Retriever</strong> -- No LLM call. Fetches documents from ChromaDB or Tavily based on the router's decision.</li>
-            <li><strong>Grader</strong> -- LLM evaluates whether retrieved documents are relevant to the original query.</li>
-            <li><strong>Rewriter</strong> -- LLM rewrites the query to improve retrieval results on the next attempt.</li>
-            <li><strong>Generator</strong> -- LLM synthesizes a final answer from the retrieved context.</li>
-            <li><strong>Hallucination Check</strong> -- LLM verifies the generated answer is grounded in the retrieved documents.</li>
+            <li><strong><a href="local-rag-deep-dive.html">VaultRAG</a></strong> (LangChain) &mdash; Traditional RAG with dual-mode privacy, multimodal support, hybrid retrieval</li>
+            <li><strong><a href="agentic-rag-react.html">Agentic RAG - ReAct</a></strong> (LlamaIndex) &mdash; Autonomous agent with tool selection loop</li>
+            <li><strong>This project</strong> (LangGraph) &mdash; Developer-controlled state machine with quality gates</li>
         </ul>
+        <p>The trade-off: ReAct gives the LLM full control (flexible but unpredictable). This graph gives the developer full control (predictable but rigid). See <a href="../articles/rag-patterns-evolution.html">Evolution of RAG</a> for the full comparison.</p>
 
         <h2>Metrics</h2>
         <div class="metrics">
@@ -81,6 +114,10 @@ Grader (LLM: are docs relevant?)<br>
                 <div class="number">2</div>
                 <div class="label">Self-Correction Loops</div>
             </div>
+            <div class="metric">
+                <div class="number">3</div>
+                <div class="label">Quality Gates</div>
+            </div>
         </div>
 
         <h2>Technologies</h2>
@@ -95,8 +132,10 @@ Grader (LLM: are docs relevant?)<br>
             <span class="tag">Python</span>
         </div>
 
-        <div>
+        <div style="margin-top: 24px;">
             <a href="https://github.com/prsaurabh/agentic-rag-orchestrated" class="btn btn-accent" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <a href="agentic-rag-react.html" class="btn btn-primary">ReAct Agent Project</a>
+            <a href="../articles/rag-patterns-evolution.html" class="btn btn-primary">Evolution of RAG Article</a>
             <a href="../projects.html" class="btn btn-primary">Back to Projects</a>
         </div>
 
@@ -107,5 +146,6 @@ Grader (LLM: are docs relevant?)<br>
     Saurabh Prasad - New York, NY
 </footer>
 
+<script src="../js/theme.js"></script>
 </body>
 </html>
