@@ -14,6 +14,20 @@ This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior S
 
 **The resume is NOT the source of truth.** The website is independent — it can go beyond, diverge from, or extend the resume in any direction. There is no single source of truth. Everything can be changed.
 
+## Footer visit counters (stealth feature)
+The homepage footer shows three small dot-separated numbers next to the `dn` link. They look like decoration; only Saurabh knows what they are. **Order is fixed left → right:**
+1. **Total** (gray `#7d8590`) — every homepage hit
+2. **LinkedIn** (blue `#0A66C2`) — hits with `?ref=linkedin`
+3. **Resume** (amber `#f0883e`) — hits with `?ref=resume`
+
+Backed by free public counter API at `https://abacus.jasoncameron.dev`, namespace `prsaurabh-portfolio-2026`, keys `total` / `linkedin` / `resume`. No signup, no auth. Logic in [js/counter.js](js/counter.js).
+
+**To self-exclude visits:** visit `prsaurabh.github.io/#notrack` once per browser — sets `localStorage.notrack=1` and increments are skipped from then on. Re-enable by clearing localStorage.
+
+**Public URLs to use when sharing:**
+- LinkedIn posts: `https://prsaurabh.github.io/?ref=linkedin`
+- Resume PDF link: `https://prsaurabh.github.io/?ref=resume`
+
 ## Guidelines
 - All web searches must target **2026** — always include the current year in search queries to get up-to-date results.
 - Do not add summary or technical skills sections to the experience page — keep it focused on company header + role summary + project cards.
