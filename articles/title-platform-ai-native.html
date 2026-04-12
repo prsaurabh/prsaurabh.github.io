@@ -350,28 +350,7 @@ When examining a title chain:
         <p>Pure semantic matching ("find the skill whose description best matches this query") works at 10-50 skills. At 500+ business rules, it breaks down due to <strong>semantic confusion</strong> &mdash; research shows agent performance degrades sharply when skill selection exceeds 50-100 options. The solution is <strong>hybrid routing</strong>:</p>
 
         <h3>Two-Phase Discovery</h3>
-        <div class="diagram">
-Phase 1: Categorical Pre-Filtering (Deterministic)<br>
-&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
-Request context: {state: State 1, type: examination, amount: $450K}<br>
-<br>
-Filter by:<br>
-&bull; Domain category (title / closing / underwriting / compliance)<br>
-&bull; State scope (state-specific rules + national rules)<br>
-&bull; Transaction type (residential, commercial, refinance)<br>
-&bull; Amount threshold (standard vs. high-value)<br>
-<br>
-Result: 500 skills &rarr; ~15-30 candidates<br>
-<br>
-Phase 2: Semantic Matching (LLM-Assisted)<br>
-&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;<br>
-Within the narrowed set, match against request context:<br>
-&bull; Trigger conditions in skill metadata<br>
-&bull; Description similarity to query intent<br>
-&bull; Historical activation patterns (which skills fired for similar contexts)<br>
-<br>
-Result: ~15-30 candidates &rarr; 2-5 activated skills
-        </div>
+        <img src="images/two-phase-discovery.png" alt="Two-phase skill discovery showing Phase 1 categorical pre-filtering reducing 500 skills to 15-30 candidates, then Phase 2 semantic matching narrowing to 2-5 activated skills" style="width: 100%; border-radius: 12px; margin: 20px 0;">
         <p>This hybrid approach keeps deterministic control over the first pass (fast, auditable, no hallucination risk) while leveraging LLM understanding for nuanced final selection.</p>
 
         <h3>Skill Metadata for Routing</h3>
@@ -497,54 +476,7 @@ Result: ~15-30 candidates &rarr; 2-5 activated skills
         </div>
 
         <h3>System Flow</h3>
-        <div class="diagram">
-Request arrives (from Gen UI, agents, or other systems)<br>
-<br>
-&#9484;&#9472; Query Understanding &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
-&#9474;  Classify: CRUD operation? Workflow? Search? Agent action? &#9474;<br>
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
-                          &#9474;<br>
-                          &#9660;<br>
-&#9484;&#9472; Skill Discovery (Two-Phase) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
-&#9474;  Phase 1: Categorical pre-filter (state, type, amount) &#9474;<br>
-&#9474;  Phase 2: Semantic match within narrowed set            &#9474;<br>
-&#9474;  Conflict resolution: priority + specificity ranking    &#9474;<br>
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
-                          &#9474;<br>
-                          &#9660;<br>
-&#9484;&#9472; Load Activated Skills (Progressive Disclosure) &#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
-&#9474;  Level 2: Full instructions for matched skills          &#9474;<br>
-&#9474;  Level 3: MCP connections, references, templates         &#9474;<br>
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
-                          &#9474;<br>
-                          &#9660;<br>
-&#9484;&#9472; LLM Reasoning (Plan-Act-Reflect) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
-&#9474;                                                            &#9474;<br>
-&#9474;  PLAN:    Based on loaded skill instructions, what steps? &#9474;<br>
-&#9474;  ACT:     Execute via MCP &mdash; SQL, APIs, retrieval,   &#9474;<br>
-&#9474;           document ops, agent actions                      &#9474;<br>
-&#9474;  REFLECT: Sufficient? If confused, re-query skill registry&#9474;<br>
-&#9474;           for more context and revise the plan             &#9474;<br>
-&#9474;                                                            &#9474;<br>
-&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9474;<br>
-&#9474;  &#9474;  Guardrails &amp; Evals at every step              &#9474;     &#9474;<br>
-&#9474;  &#9474;  Deterministic: validation, compliance, calcs    &#9474;     &#9474;<br>
-&#9474;  &#9474;  Non-deterministic: LLM reasoning, edge cases    &#9474;     &#9474;<br>
-&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;<br>
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
-                          &#9474;<br>
-                          &#9660;<br>
-&#9484;&#9472; Execute Operations &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;<br>
-&#9474;  C &mdash; Create records (transactions, documents)       &#9474;<br>
-&#9474;  R &mdash; Read / Search (~10% of system)                 &#9474;<br>
-&#9474;  U &mdash; Update records, trigger workflows              &#9474;<br>
-&#9474;  D &mdash; Delete with audit trail                        &#9474;<br>
-&#9474;  All via MCP to underlying stores                         &#9474;<br>
-&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;<br>
-                          &#9474;<br>
-                          &#9660;<br>
-             Serve to: Gen UI | Agents | Other Systems
-        </div>
+        <img src="images/ai-native-system-flow.png" alt="AI-native system flow: request moves through Query Understanding, Skill Discovery, Load Activated Skills, LLM Reasoning with Plan-Act-Reflect loop, Execute Operations, then back to the client, with Guardrails and Evals applied at every step" style="width: 100%; border-radius: 12px; margin: 20px 0;">
 
         <!-- ============================================ -->
         <!-- THREE-TIER DELEGATION MODEL                   -->
@@ -988,17 +920,6 @@ These render in sandboxed iframes alongside A2UI components
         <h2>The Bigger Picture</h2>
         <p>AI-native is not a feature. It is a different way of building software where the boundaries between user interface, application code, and data start to dissolve. The UI is generated from agent intent. The application logic is retrieved from a knowledge store instead of compiled from code. The data layer is not one database but several purpose-built stores that all speak the same protocol. And the glue that holds it together is not REST endpoints but a standardized protocol stack that the industry converged on in 2026.</p>
         <p>The shift is not about replacing every traditional system tomorrow. It is about recognizing that the default architecture for new enterprise applications is changing, and that the pattern now has enough maturity &mdash; real standards, real tools, real production usage &mdash; to be taken seriously. For domains where business rules change faster than developers can ship code, where compliance is non-negotiable, and where scale makes manual processes impossible, AI-native is no longer an experiment. It is the architecture worth building toward.</p>
-
-        <!-- ============================================ -->
-        <!-- MY ROLE                                       -->
-        <!-- ============================================ -->
-        <h2>My Role</h2>
-        <ul>
-            <li><strong>Architect &amp; Technical Lead</strong> &mdash; Primary person who designed the system architecture, defined the multi-store strategy, skill registry design, and MCP-first integration model</li>
-            <li><strong>Hands-On Development</strong> &mdash; Building core components including the retrieval pipeline, MCP integrations, skill registry, and agentic workflow orchestration</li>
-            <li><strong>Modernization Strategy</strong> &mdash; Defined the Strangler Fig migration approach and the skill extraction process for decomposing the monolith into AI-native microservices</li>
-            <li><strong>Research &amp; Standards</strong> &mdash; Evaluated and adopted 2026 agent ecosystem standards (Agent Skills, MCP, A2A, AG-UI, A2UI) to ensure the architecture is future-proof and aligned with industry convergence. Designed the generative UI layer with A2UI as the declarative presentation protocol</li>
-        </ul>
 
         <div style="margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap;">
             <a href="../articles.html" class="btn btn-primary">All Articles</a>
