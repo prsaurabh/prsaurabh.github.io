@@ -9,6 +9,7 @@
 - **Figma diagrams: NO black/very dark backgrounds** — use lighter dark backgrounds (e.g., r:0.14, g:0.16, b:0.2) so they're visible on the dark-themed website. Text must be clearly readable.
 - **Each project page is independent** — do not assume the reader has seen other projects. Every page must make sense on its own without cross-references being required to understand the basics.
 - **Never use `cat >` or shell heredoc to create files.** ALWAYS use the Write tool. If Write errors with "Read first," READ the file — that error means the file may already exist with content you'd destroy. Never route around the Write safety with Bash.
+- **Commit after finishing each unit of work — do not wait for the user to ask.** User has explicitly opted in to auto-commits for this project. Batch only related changes; never leave finished work uncommitted between turns. If you also need to push, ask first unless the user already said push.
 
 ## Project
 This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior Staff Software Engineer. Pure static HTML/CSS, no build system.
