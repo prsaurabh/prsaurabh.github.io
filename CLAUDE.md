@@ -10,6 +10,7 @@
 - **Each project page is independent** — do not assume the reader has seen other projects. Every page must make sense on its own without cross-references being required to understand the basics.
 - **Never use `cat >` or shell heredoc to create files.** ALWAYS use the Write tool. If Write errors with "Read first," READ the file — that error means the file may already exist with content you'd destroy. Never route around the Write safety with Bash.
 - **Commit AND push after finishing each unit of work — do not wait, do not ask.** User has explicitly opted in to auto-commit-and-push for this project. Batch only related changes; never leave finished work uncommitted or unpushed between turns.
+- **NO em dashes (—) in user-facing copy.** Applies to website prose, LinkedIn headlines/summaries, resume content, article body text. Use periods or commas instead. Em dashes are a strong AI-generated tell that makes the content easy to flag as machine-written. CLAUDE.md and internal docs are exempt — this rule only applies to content the public will read.
 
 ## Project
 This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior Staff Software Engineer. Pure static HTML/CSS, no build system.
