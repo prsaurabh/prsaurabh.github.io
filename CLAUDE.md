@@ -11,11 +11,25 @@
 - **Never use `cat >` or shell heredoc to create files.** ALWAYS use the Write tool. If Write errors with "Read first," READ the file — that error means the file may already exist with content you'd destroy. Never route around the Write safety with Bash.
 - **Commit AND push after finishing each unit of work — do not wait, do not ask.** User has explicitly opted in to auto-commit-and-push for this project. Batch only related changes; never leave finished work uncommitted or unpushed between turns.
 - **NO em dashes (—) in user-facing copy.** Applies to website prose, LinkedIn headlines/summaries, resume content, article body text. Use periods or commas instead. Em dashes are a strong AI-generated tell that makes the content easy to flag as machine-written. CLAUDE.md and internal docs are exempt — this rule only applies to content the public will read.
+- **Default to SHORT answers. Long answers only when the user explicitly asks for depth.** Most questions need 2-5 sentences, not paragraphs with headers and bullet lists. Do not pad with restatements, caveats, "on the other hand" asides, multi-section structures, or closing summaries. If the user asks a yes/no or comparison question, lead with the direct answer in the first sentence. Expand only if the question genuinely requires it or the user asked for detail. **Why:** repeated frustration — long answers bury the point, waste the user's time, and signal that I do not actually know what is load-bearing. **How to apply:** before sending any answer, ask "can I cut this in half without losing the point?" If yes, cut. If the user says "short answer" or "concise," that is a hard limit, not a suggestion. When in doubt, ship the short version and offer to expand.
+- **ZERO external attribution in any public-facing content. No exceptions.** Never cite, name-drop, link, or credit external people, videos, articles, gists, tools, products, frameworks, standards, or companies by name in website prose, article body text, LinkedIn posts, resume, or any public copy. No "inspired by X," no "as Karpathy showed," no "borrowed from Claude Code's architecture," no "adopted by Cursor/Codex/Copilot," no "Cole Medin's video," no "agentskills.io open standard." When the user shares a YouTube video, blog post, gist, or paper, it is **research input for me only** — I read it, understand the idea, then present the idea in our own voice as our own synthesis. The reader must never know where it came from. **Why:** past blunder — I quietly slid in references like "Inspired by production patterns in Claude Code, the Agent SDK, and enterprise multi-agent frameworks (LangGraph, Semantic Kernel)" and "This is borrowed from Claude Code's architecture" into ai-native-platform.html. That is exactly the behavior being banned. Every idea on the site must read as original voice, full stop. **How to apply:** before writing any sentence that names an external entity, stop and rewrite it as a principle or pattern stated in our own words. If the idea cannot survive without the name attached, the idea is not yet ours — keep working on it until it is. Naming protocols/formats that are literally part of the tech stack being described (e.g., "HTTP," "JSON," "SQL") is fine; naming people, companies, products, branded frameworks, or branded standards is not. When in doubt, strip the name.
 
 ## Project
 This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior Staff Software Engineer. Pure static HTML/CSS, no build system.
 
 **The resume is NOT the source of truth.** The website is independent — it can go beyond, diverge from, or extend the resume in any direction. There is no single source of truth. Everything can be changed.
+
+## Resume PDF workflow
+Resume PDFs are **not** generated in this repo. The pipeline lives in a sibling repo:
+
+- **Source + scripts:** `c:/Users/LENOVO/Repo/interview-prep/pdf-resume/`
+  - `resume.html` + `generate-pdf.py` → `resume.pdf` (short/public version, no phone number)
+  - `resume-full.html` + `generate-full-pdf.py` → `resume-full.pdf` (full version, includes phone + full contact)
+- **Tool:** Playwright (Chromium headless) renders the HTML to PDF at Letter size.
+- **Output sync:** each script copies its PDF to `C:\Users\LENOVO\OneDrive\portfolio-resumes\` automatically.
+- **What's in this repo:** `assets/resume.pdf` is a committed copy of the public/short version (v1), linked from the homepage Resume button. The full version (v2) lives only on OneDrive and is linked from the DN page.
+
+**If asked to update the resume PDF:** edit the HTML in `interview-prep/pdf-resume/`, run the relevant Python script, then copy the regenerated PDF into `assets/resume.pdf` here (for v1) or use the OneDrive share URL (for v2). Do NOT try to generate PDFs from this repo — there is no pipeline here and there never has been.
 
 ## Footer visit counters (stealth feature)
 The homepage footer shows three small dot-separated numbers next to the `dn` link. They look like decoration; only Saurabh knows what they are. **Order is fixed left → right:**
