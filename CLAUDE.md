@@ -19,6 +19,9 @@ This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior S
 
 **The resume is NOT the source of truth.** The website is independent — it can go beyond, diverge from, or extend the resume in any direction. There is no single source of truth. Everything can be changed.
 
+## LinkedIn canonical experience source
+The **authoritative LinkedIn version** of the Anywhere experience section lives at [LINKEDIN-EXPERIENCE.md](LINKEDIN-EXPERIENCE.md) at the repo root. That file contains the three-paragraph experience prose exactly as it is live on LinkedIn. When the user says "the LinkedIn version" or asks to bring back what's on LinkedIn, go to that file — do NOT attempt to rewrite or reconstruct. The file is locked; edit only on explicit instruction. Other surfaces (resume, website) have their own tighter or shorter variants, but LinkedIn is the reference point for these three Anywhere projects.
+
 ## Resume PDF workflow
 Resume PDFs are **not** generated in this repo. The pipeline lives in a sibling repo:
 
