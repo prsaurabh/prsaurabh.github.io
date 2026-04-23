@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 ## ACTIVE CORRECTIONS (remove when resolved)
+- **When presenting options to pick from, ALWAYS number them 1, 2, 3 — never use A, B, C.** User picks options by number. Applies to every option list in chat.
 - **Project/article titles must be 4-5 words** — not 1-2 word brand names, not full sentences. Think GitHub repo style but slightly longer.
 - **Do NOT reuse the old name** when renaming something — that's the whole point of renaming.
 - **Do NOT expand abbreviations in titles** — "RAG" is enough, never write "Retrieval-Augmented Generation" in a title.
