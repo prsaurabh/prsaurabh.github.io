@@ -21,6 +21,12 @@ This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior S
 
 **The resume is NOT the source of truth.** The website is independent — it can go beyond, diverge from, or extend the resume in any direction. There is no single source of truth. Everything can be changed.
 
+## Contact info (job search, 2026)
+Active contact info for resumes, LinkedIn, website, and any new public copy:
+- **Email:** `saurabhprasad.tech@gmail.com` (replaces old `prsaurabh@gmail.com` everywhere — do not use the old one)
+- **Phone:** `657-646-7598` (full resume only; short/public resume omits phone by design)
+- **Location:** New York, NY
+
 ## LinkedIn canonical sources
 All LinkedIn source-of-truth files live in the tracked [linkedin/](linkedin/) folder at the repo root:
 
