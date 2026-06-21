@@ -39,11 +39,11 @@ Other surfaces (resume, website) have their own tighter or shorter variants, but
 ## Resume PDF workflow
 Resume PDFs are **not** generated in this repo. The pipeline lives in a sibling repo:
 
-- **Source + scripts:** `c:/Users/LENOVO/Repo/interview-prep/pdf-resume/`
+- **Source + scripts:** the sibling `interview-prep/pdf-resume/` repo (Windows: `c:/Users/LENOVO/Repo/...`, macOS: `~/Documents/Repo/...`)
   - `resume.html` + `generate-pdf.py` → `resume.pdf` (short/public version, no phone number)
   - `resume-full.html` + `generate-full-pdf.py` → `resume-full.pdf` (full version, includes phone + full contact)
 - **Tool:** Playwright (Chromium headless) renders the HTML to PDF at Letter size.
-- **Output sync:** each script copies its PDF to `C:\Users\LENOVO\OneDrive\portfolio-resumes\` automatically.
+- **Output sync:** each script auto-detects the OS and copies its PDF to the OneDrive `portfolio-resumes` folder — Windows: `C:\Users\LENOVO\OneDrive\portfolio-resumes\`, macOS: `~/Library/CloudStorage/OneDrive-Personal/portfolio-resumes/`. If OneDrive isn't present the copy is skipped (no error).
 - **What's in this repo:** `assets/resume.pdf` is a committed copy of the public/short version (v1), linked from the homepage Resume button. The full version (v2) lives only on OneDrive and is linked from the DN page.
 
 **If asked to update the resume PDF:** edit the HTML in `interview-prep/pdf-resume/`, run the relevant Python script, then copy the regenerated PDF into `assets/resume.pdf` here (for v1) or use the OneDrive share URL (for v2). Do NOT try to generate PDFs from this repo — there is no pipeline here and there never has been.
