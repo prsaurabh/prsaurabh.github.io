@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>5 &middot; Orchestration Patterns</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.diagram-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 10px 8px; margin: 18px 0; text-align: center; }
+.diagram-box .caption { font-size: 12px; color: var(--dim); padding: 10px 16px 8px; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.vs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin: 16px 0; }
+.vs .side { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.vs h4 { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; }
+.vs .side.a h4 { color: var(--green); }
+.vs .side.b h4 { color: var(--red); }
+.vs p { font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.6; }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.fw { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 14px 0; }
+.fwi { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fwi h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--accent); }
+.fwi p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+.pagenav .disabled { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 5 of 7</div>
+  <h1 class="title">Orchestration Patterns</h1>
+  <div class="sub">One loop or many? The pattern catalog, the great multi-agent debate and how it
+  settled, and the production craft of making several agents produce one coherent answer.</div>
+  <div class="reading-time">~11 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      Orchestration is a <strong>spectrum of autonomy</strong>: at one end, <em>workflows</em> &mdash; code
+      decides the steps, models fill them in; at the other, <em>agents</em> &mdash; the model decides its own
+      path. The craft is picking the least autonomy that solves the task. The 2026 field lesson is humbling:
+      <strong>about half of the teams that started multi-agent rewrote back to a single agent with better
+      tools.</strong> Complexity must be earned.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">+90.2%</div><div class="k">Anthropic&rsquo;s orchestrator-workers vs single agent on research tasks</div></div>
+      <div class="stat"><div class="v">~15&times;</div><div class="k">multi-agent token cost vs chat (single agent: ~4&times;)</div></div>
+      <div class="stat"><div class="v">~70%</div><div class="k">of production multi-agent systems are orchestrator-worker</div></div>
+      <div class="stat"><div class="v">~50%</div><div class="k">of multi-agent starts got rewritten as single-agent</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>The four shapes worth knowing</h2>
+    <p>The catalog has a dozen named patterns, but they compose from four basic shapes:</p>
+    <div class="diagram-box">
+      <svg viewBox="0 0 660 300" width="100%" style="max-width:660px" role="img" aria-label="Four orchestration shapes">
+        <!-- pipeline -->
+        <text x="80" y="24" fill="#58a6ff" font-size="12" font-weight="700">PIPELINE</text>
+        <rect x="20" y="40" width="36" height="26" rx="6" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <rect x="76" y="40" width="36" height="26" rx="6" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <rect x="132" y="40" width="36" height="26" rx="6" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <line x1="56" y1="53" x2="74" y2="53" stroke="#58a6ff" stroke-width="1.5"/>
+        <line x1="112" y1="53" x2="130" y2="53" stroke="#58a6ff" stroke-width="1.5"/>
+        <text x="94" y="90" text-anchor="middle" fill="#8b949e" font-size="10">fixed steps, checkable in between</text>
+
+        <!-- fan-out -->
+        <text x="470" y="24" fill="#3fb950" font-size="12" font-weight="700">FAN-OUT / MERGE</text>
+        <rect x="400" y="40" width="36" height="26" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <rect x="470" y="14" width="36" height="22" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <rect x="470" y="44" width="36" height="22" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <rect x="470" y="74" width="36" height="22" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <rect x="540" y="40" width="36" height="26" rx="6" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <line x1="436" y1="48" x2="468" y2="26" stroke="#3fb950" stroke-width="1.2"/>
+        <line x1="436" y1="53" x2="468" y2="55" stroke="#3fb950" stroke-width="1.2"/>
+        <line x1="436" y1="60" x2="468" y2="84" stroke="#3fb950" stroke-width="1.2"/>
+        <line x1="506" y1="26" x2="538" y2="48" stroke="#3fb950" stroke-width="1.2"/>
+        <line x1="506" y1="55" x2="538" y2="53" stroke="#3fb950" stroke-width="1.2"/>
+        <line x1="506" y1="84" x2="538" y2="60" stroke="#3fb950" stroke-width="1.2"/>
+        <text x="488" y="116" text-anchor="middle" fill="#8b949e" font-size="10">independent chunks in parallel, then synthesize</text>
+
+        <!-- orchestrator -->
+        <text x="60" y="160" fill="#bc8cff" font-size="12" font-weight="700">ORCHESTRATOR&ndash;WORKERS</text>
+        <rect x="60" y="176" width="56" height="28" rx="6" fill="rgba(188,140,255,0.15)" stroke="#bc8cff"/>
+        <text x="88" y="194" text-anchor="middle" fill="#bc8cff" font-size="10" font-weight="600">lead</text>
+        <rect x="20" y="236" width="44" height="24" rx="6" fill="rgba(188,140,255,0.10)" stroke="#bc8cff" stroke-dasharray="3 2"/>
+        <rect x="80" y="236" width="44" height="24" rx="6" fill="rgba(188,140,255,0.10)" stroke="#bc8cff" stroke-dasharray="3 2"/>
+        <rect x="140" y="236" width="44" height="24" rx="6" fill="rgba(188,140,255,0.10)" stroke="#bc8cff" stroke-dasharray="3 2"/>
+        <line x1="76" y1="204" x2="44" y2="234" stroke="#bc8cff" stroke-width="1.2"/>
+        <line x1="88" y1="204" x2="100" y2="234" stroke="#bc8cff" stroke-width="1.2"/>
+        <line x1="102" y1="204" x2="158" y2="234" stroke="#bc8cff" stroke-width="1.2"/>
+        <text x="102" y="282" text-anchor="middle" fill="#8b949e" font-size="10">lead owns context; ephemeral workers return summaries</text>
+
+        <!-- judge loop -->
+        <text x="440" y="160" fill="#e3b341" font-size="12" font-weight="700">GENERATOR&ndash;VERIFIER</text>
+        <rect x="410" y="180" width="72" height="28" rx="6" fill="rgba(227,179,65,0.12)" stroke="#e3b341"/>
+        <text x="446" y="198" text-anchor="middle" fill="#e3b341" font-size="10" font-weight="600">generate</text>
+        <rect x="530" y="180" width="72" height="28" rx="6" fill="rgba(227,179,65,0.12)" stroke="#e3b341"/>
+        <text x="566" y="198" text-anchor="middle" fill="#e3b341" font-size="10" font-weight="600">judge</text>
+        <path d="M 482 188 L 528 188" stroke="#e3b341" stroke-width="1.4"/>
+        <path d="M 528 202 Q 505 226 482 202" fill="none" stroke="#e3b341" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <text x="506" y="240" text-anchor="middle" fill="#8b949e" font-size="10">critique loop until pass or max rounds</text>
+      </svg>
+      <div class="caption">Everything else &mdash; routing, hierarchies, swarms &mdash; is a composition or variation of these.</div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="n blue">&#8594;</div><div>
+        <h3>Pipeline (prompt chaining)</h3>
+        <p>Fixed, ordered steps with programmatic checks between them. Use when the decomposition is knowable
+        in advance and you want inspectable intermediates. This is a <em>workflow</em> &mdash; code owns the graph.</p>
+      </div></div>
+      <div class="card"><div class="n green">&#8862;</div><div>
+        <h3>Fan-out: sectioning and voting</h3>
+        <p>Sectioning = split independent chunks (review 12 files at once). Voting = same task N times,
+        aggregate &mdash; buy confidence with tokens (judge panels, security review). Both die when chunks
+        share hidden dependencies.</p>
+      </div></div>
+      <div class="card"><div class="n purple">&#9741;</div><div>
+        <h3>Orchestrator&ndash;workers &mdash; the production winner</h3>
+        <p>A lead agent <em>dynamically</em> decomposes, delegates to isolated subagents, and synthesizes their
+        compressed summaries. ~70% of 2026 production multi-agent systems. This is what Claude Code does when
+        it spawns subagents for you.</p>
+      </div></div>
+      <div class="card"><div class="n orange">&#8635;</div><div>
+        <h3>Generator&ndash;verifier (evaluator-optimizer)</h3>
+        <p>One agent produces, another grades against <em>explicit criteria</em>, loop until pass. The trap:
+        a verifier told only &ldquo;check if it&rsquo;s good&rdquo; rubber-stamps everything. No articulable
+        criteria, no verifier.</p>
+      </div></div>
+    </div>
+    <p class="muted">Also in the catalog: <strong>routing</strong> (a classifier dispatches to specialized
+    paths &mdash; cheap model vs expensive model), <strong>hierarchies</strong> (supervisors of supervisors
+    &mdash; almost everyone reaches for this too early; wait until 6+ workers), and <strong>swarms/handoffs</strong>
+    (peers transfer control to each other &mdash; won for support-style conversations, lost for everything
+    traceability matters in).</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>The great debate &mdash; and the synthesis</h2>
+    <p>The field&rsquo;s two most-cited essays landed within a day of each other in June 2025, arguing opposites:</p>
+    <div class="vs">
+      <div class="side a">
+        <h4>Anthropic: parallelism wins</h4>
+        <p>Orchestrator + parallel subagents beat single-agent Opus by 90.2% on research. Read-heavy work
+        parallelizes: subagents act as intelligent filters, compressing many reads into short findings.</p>
+        <p>The catch: token spend explains ~80% of the performance gain. You buy quality with tokens.</p>
+      </div>
+      <div class="side b">
+        <h4>Cognition: don&rsquo;t build multi-agents</h4>
+        <p>Actions carry implicit decisions; parallel agents with different partial views make conflicting
+        decisions. Coding &mdash; write-heavy, tightly coupled &mdash; is the losing case.</p>
+        <p>Prescription: one linear agent plus great compaction. Share full traces or don&rsquo;t split the work.</p>
+      </div>
+    </div>
+    <div class="callout blue"><strong>How 2026 settled it:</strong> both were right about their own domain,
+    and production converged on a synthesis &mdash; <strong>one orchestrator owns the full conversation;
+    subagents are ephemeral, isolated, and return compressed summaries.</strong> Cognition&rsquo;s context
+    discipline plus Anthropic&rsquo;s parallelism. Rule of thumb: <em>read-heavy and parallelizable &rarr;
+    fan out; write-heavy or sequential &rarr; one agent.</em> And a sequential multi-hop task gains nothing
+    from more agents &mdash; parallelism, not agent count, is what buys the win.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>Production craft</h2>
+    <p>The details that separate a demo from a system:</p>
+    <div class="cards">
+      <div class="card"><div class="n blue">1</div><div>
+        <h3>Barriers vs pipelines</h3>
+        <p>Barrier = wait for all workers, then synthesize (simple, but the slowest worker blocks everyone).
+        Pipeline = stream results downstream as they finish (faster, harder to trace). Anthropic&rsquo;s lead
+        agent is deliberately synchronous &mdash; they named async as the upgrade they deferred for simplicity.</p>
+      </div></div>
+      <div class="card"><div class="n purple">2</div><div>
+        <h3>The task brief and the information bottleneck</h3>
+        <p>Both from Topic 2b, and they&rsquo;re the top two failure sources here: vague briefs make workers
+        duplicate and drift; summaries lose critical details in handoffs. Mitigation: summaries carry pointers
+        (file paths, trace IDs) back to full artifacts on a shared filesystem.</p>
+      </div></div>
+      <div class="card"><div class="n orange">3</div><div>
+        <h3>Stop loops mechanically, not by asking</h3>
+        <p>Never ask an agent if it&rsquo;s done looping. Detect convergence mechanically: loop-until-dry
+        (re-spawn discovery until a round finds nothing new), hard turn ceilings, and token budgets as
+        active safety features &mdash; not just cost controls.</p>
+      </div></div>
+      <div class="card"><div class="n green">4</div><div>
+        <h3>Judges: capable, different, adversarial</h3>
+        <p>A judge should be at least as capable as the agent it grades, ideally a different model (shared
+        blind spots), scoring against a written rubric &mdash; and prompted adversarially (&ldquo;find what&rsquo;s
+        wrong&rdquo;), which catches edge cases neutral review misses.</p>
+      </div></div>
+      <div class="card"><div class="n blue">5</div><div>
+        <h3>Checkpoint, trace, and gate</h3>
+        <p>Long-running orchestrations resume from checkpoints, never restart. Trace <em>decisions</em>, not
+        just outputs &mdash; same prompt legitimately takes different paths. Put human approval gates at
+        defined nodes (before writes, on low confidence), not everywhere.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>The framework landscape, one line each</h2>
+    <div class="fw">
+      <div class="fwi"><h4>LangGraph</h4><p>Explicit graph of states with checkpointing and human-interrupt nodes; the enterprise production leader. Guidance: supervisor first, swarm only if it bottlenecks.</p></div>
+      <div class="fwi"><h4>OpenAI Agents SDK</h4><p>Minimal primitives: agents, tools, handoffs, guardrails. Two blessed patterns: manager (agents-as-tools) vs handoffs. Docs say start with one agent.</p></div>
+      <div class="fwi"><h4>Claude Agent SDK</h4><p>The Claude Code harness as a library: subagents with isolated context, filesystem as shared state, hooks. What this course has been secretly teaching.</p></div>
+      <div class="fwi"><h4>Google ADK</h4><p>Code-first; cleanly splits deterministic workflow agents (Sequential/Parallel/Loop) from LLM-driven transfer.</p></div>
+      <div class="fwi"><h4>CrewAI / AutoGen</h4><p>CrewAI: role-based crews, fastest prototyping. AutoGen merged into Microsoft Agent Framework; its GroupChat peer pattern is the one that lost in production.</p></div>
+      <div class="fwi"><h4>Protocols: MCP + A2A</h4><p>The stack stratified: MCP connects agents to tools; A2A connects agents to agents across org boundaries (Linux Foundation, 150+ orgs). Interop left the frameworks and moved into protocols.</p></div>
+    </div>
+    <div class="callout"><strong>Interview angle:</strong> &ldquo;Would you make this multi-agent?&rdquo; The
+    senior answer defaults to no: start single-agent, escalate only for parallelizable read-heavy work or
+    context overflow, quote the ~15&times; token cost, and name the synthesis (orchestrator owns context,
+    workers return summaries). Knowing when <em>not</em> to orchestrate is the signal.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>Try it &mdash; run an orchestration and price it</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~15 minutes, in Claude Code</span>
+      <ol>
+        <li>Pick a read-heavy question about one of your repos, e.g. <em>&ldquo;across my interview-prep repo,
+        what are all the places resume rules are defined, and do they contradict each other?&rdquo;</em></li>
+        <li>Run it once plainly (single agent). Note the wall-clock time and, right after, run
+        <code>/context</code> to see tokens consumed.</li>
+        <li>New session. Same question, but: <em>&ldquo;fan out 3 parallel subagents &mdash; one for rule
+        files, one for CLAUDE.md/skills, one for page templates &mdash; each returning a compact list, then
+        synthesize.&rdquo;</em> That&rsquo;s orchestrator-workers with sectioning.</li>
+        <li>Compare: quality of answer, time, tokens. You&rsquo;ll usually see the fan-out win on completeness
+        and lose on cost &mdash; the 15&times; tradeoff, live.</li>
+        <li>Spot the shape: which parts were a barrier (waited for all three) vs a pipeline? What did each
+        subagent&rsquo;s returned summary <em>lose</em>?</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">6.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">Ranked recency-first; dates verified.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=2czYyrTzILg" target="_blank" rel="noopener">From Chaos to Choreography: Multi-Agent Patterns That Actually Work</a></h3>
+        <div class="meta">AI Engineer &middot; 26 min &middot; ~45K views &middot; <strong>Apr 8, 2026</strong></div>
+        <p><strong>Start here.</strong> Orchestration vs choreography, coordination patterns, state management,
+        and failure recovery for production systems &mdash; exactly this page&rsquo;s altitude.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=LdQpoK2TzSo" target="_blank" rel="noopener">Introducing Managed Deep Agents &mdash; LangChain, Interrupt 2026</a></h3>
+        <div class="meta">LangChain &middot; 18 min &middot; ~11K views &middot; <strong>May 29, 2026</strong></div>
+        <p>The newest pick: planner + subagent fan-out with shared filesystem state, offered as a managed
+        orchestration harness.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=RpUTF_U4kiw" target="_blank" rel="noopener">Claude Code Multi-Agent Orchestration with Sandboxes &mdash; IndyDevDan</a></h3>
+        <div class="meta">IndyDevDan &middot; 24 min &middot; ~56K views &middot; <strong>Feb 9, 2026</strong></div>
+        <p>Orchestrator-worker hands-on: one primary agent spawning, monitoring, and collecting from parallel
+        sandboxed workers. Practice, not slideware.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=Dwyx8GomVvQ" target="_blank" rel="noopener">Armchair Architects: Multi-Agent Orchestration and Patterns</a></h3>
+        <div class="meta">Microsoft Developer &middot; 24 min &middot; ~13K views &middot; <strong>Jan 6, 2026</strong></div>
+        <p>Architect-level and vendor-agnostic: deterministic workflows vs dynamic orchestration, handoff and
+        supervisor patterns.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="tool-design.html">&larr; 4 &middot; Tool Design</a>
+    <span class="disabled">Next: Permissions &amp; Sandboxing (coming soon) &rarr;</span>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 5 of 7</footer>
+</div>
+</body>
+</html>
