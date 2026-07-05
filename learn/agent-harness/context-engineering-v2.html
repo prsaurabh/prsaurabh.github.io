@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>2b &middot; Context Engineering II</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.vs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin: 16px 0; }
+.vs .side { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.vs h4 { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; }
+.vs .side.a h4 { color: var(--purple); }
+.vs .side.b h4 { color: var(--green); }
+.vs p { font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.6; }
+.trace { background: #0a0d12; border: 1px solid var(--border2); border-radius: 10px; padding: 16px 18px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.9; overflow-x: auto; margin: 14px 0; }
+.trace .turn { color: var(--dim); }
+.trace .keep { color: var(--green); }
+.trace .drop { color: var(--red); }
+.trace .note { color: var(--orange); }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 2b &middot; deep dive</div>
+  <h1 class="title">Context Engineering II: Production Scale</h1>
+  <div class="sub">Part 1 (<a href="context-engineering.html">Context Engineering</a>) taught the four techniques.
+  This page is what the teams behind Claude Code, Manus, and Anthropic&rsquo;s research agents actually
+  optimize in production: cache economics, memory, multi-agent handoffs, and week-long tasks.</div>
+  <div class="reading-time">~12 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      At production scale, context engineering stops being about &ldquo;fitting things in the window&rdquo;
+      and becomes an <strong>economics and architecture problem</strong>. The teams shipping real agents
+      obsess over one metric above all: <strong>cache hit rate</strong> &mdash; and they design memory,
+      multi-agent handoffs, and compaction around it.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">10&times;</div><div class="k">price gap: cached vs uncached input tokens</div></div>
+      <div class="stat"><div class="v">~15&times;</div><div class="k">tokens a multi-agent system burns vs plain chat</div></div>
+      <div class="stat"><div class="v">&lt;256k</div><div class="k">effective quality window, whatever the ads say</div></div>
+      <div class="stat"><div class="v">1&ndash;2k</div><div class="k">tokens a subagent returns from ~50k+ consumed</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>The cache changes how you write context</h2>
+    <p>You met caching on the <a href="prompt-engineering.html">Prompt Engineering</a> page. Manus &mdash;
+    one of the most-watched agent teams &mdash; goes further: <em>KV-cache hit rate is the single most
+    important metric for a production agent</em>. It reshapes three habits:</p>
+    <div class="cards">
+      <div class="card"><div class="n blue">1</div><div>
+        <h3>Append-only context</h3>
+        <p>Never edit or reorder earlier transcript content &mdash; only add to the end. One changed byte
+        invalidates the cache for everything after it. Even JSON key ordering must be deterministic.</p>
+      </div></div>
+      <div class="card"><div class="n purple">2</div><div>
+        <h3>Mask tools, don&rsquo;t remove them</h3>
+        <p>Tool definitions sit at the front of context; adding/removing tools mid-task nukes the whole
+        cache (and confuses the model about tools it saw used earlier). Instead, keep the list stable and
+        <em>mask</em> which tools are allowed right now. Naming helps: <code>browser_*</code>,
+        <code>shell_*</code> prefixes let whole families be toggled.</p>
+      </div></div>
+      <div class="card"><div class="n orange">3</div><div>
+        <h3>Keep errors in the transcript</h3>
+        <p>Counterintuitive: don&rsquo;t clean up failed attempts. A stack trace left in context steers the
+        model away from repeating the mistake. Erasing failures erases the evidence &mdash; the agent walks
+        into the same wall twice. Error recovery is a hallmark of real agentic behavior.</p>
+      </div></div>
+      <div class="card"><div class="n green">4</div><div>
+        <h3>Recite the plan (attention manipulation)</h3>
+        <p>Manus constantly rewrites a <code>todo.md</code> and re-appends it &mdash; pushing the global plan
+        into the model&rsquo;s <em>recent</em> attention span to fight lost-in-the-middle drift on ~50-step
+        tasks. Claude Code&rsquo;s todo list does the same job. Cheap, and it works.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>Memory: beyond the window entirely</h2>
+    <p>Part 1 called this &ldquo;external memory.&rdquo; The 2026 landscape has real architecture behind it:</p>
+    <div class="cards">
+      <div class="card"><div class="n green">a</div><div>
+        <h3>Memory files &mdash; embarrassingly effective</h3>
+        <p>Plain markdown files (CLAUDE.md, NOTES.md) loaded at session start and edited by the agent itself.
+        Anthropic ships this as an official memory tool. Benchmarks keep asking &ldquo;is a filesystem all
+        you need?&rdquo; &mdash; and file-based memory keeps hanging with fancier systems.</p>
+      </div></div>
+      <div class="card"><div class="n blue">b</div><div>
+        <h3>Tiered memory (the MemGPT idea)</h3>
+        <p>Treat context like RAM and external storage like disk: core memory (always in-window, editable),
+        recall memory (searchable history), archival memory (vector store). Crucially, the <em>agent
+        itself</em> pages data between tiers via tool calls &mdash; it curates its own memory.</p>
+      </div></div>
+      <div class="card"><div class="n purple">c</div><div>
+        <h3>Sleep-time consolidation</h3>
+        <p>The frontier: a background agent &ldquo;thinks&rdquo; about memory while the system is idle &mdash;
+        pre-computing inferences, reorganizing notes, distilling skills. Reported wins: ~5&times; less
+        test-time compute for equal accuracy. The agent equivalent of what sleep does for you.</p>
+      </div></div>
+      <div class="card"><div class="n orange">d</div><div>
+        <h3>The honest caveat</h3>
+        <p>Independent evals show memory layers fail in characteristic ways: retrieving the wrong memory,
+        stale facts, loss during consolidation. When everything still fits in the window, full context
+        beats most memory systems. Memory is for when it <em>doesn&rsquo;t</em> fit.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>Multi-agent context: the great debate</h2>
+    <p>When several loops run at once, context becomes a coordination problem &mdash; and the field&rsquo;s
+    two most-cited essays disagree about it:</p>
+    <div class="vs">
+      <div class="side a">
+        <h4>Cognition: &ldquo;Don&rsquo;t build multi-agents&rdquo;</h4>
+        <p>Every action carries implicit decisions. Parallel agents with different partial views make
+        <em>conflicting</em> decisions and produce inconsistent work.</p>
+        <p>Share full traces or don&rsquo;t split the work; prefer one linear agent with great compaction.
+        Write-heavy work (coding) is their losing case for multi-agent.</p>
+      </div>
+      <div class="side b">
+        <h4>Anthropic: orchestrator + workers won</h4>
+        <p>Their research system &mdash; a lead agent farming out parallel subagents &mdash; beat a
+        single-agent baseline by 90%. Read-heavy, parallelizable work (research) is the winning case.</p>
+        <p>The price: ~15&times; the tokens of chat, and token budget explained ~80% of performance
+        variance. You buy quality with tokens.</p>
+      </div>
+    </div>
+    <p>By 2026 the vendors converged on a synthesis: <strong>one orchestrator owns the full conversation;
+    subagents are ephemeral, isolated, and return compressed summaries.</strong> The craft is in the handoff:</p>
+    <div class="callout blue"><strong>The task brief is everything.</strong> Anthropic found vague briefs
+    (&ldquo;research the semiconductor shortage&rdquo;) caused subagents to duplicate and drift. A proper
+    brief has four parts: <strong>objective, output format, tool guidance, and explicit boundaries</strong>.
+    And effort is scaled in the prompt: simple fact &rarr; 1 agent, few tool calls; complex research &rarr;
+    10+ subagents with divided lanes.</div>
+    <p class="muted">A quieter pattern is also back from the 1970s: the <strong>blackboard</strong> &mdash;
+    agents coordinating through a shared workspace (usually just the filesystem) rather than messages.
+    Rule of thumb, borrowed from Go: share memory by communicating (pass structured artifacts), don&rsquo;t
+    communicate by sharing memory (raw history dumps).</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>Surviving the long haul: compaction, for real</h2>
+    <p>Part 1 introduced compaction as &ldquo;summarize and keep going.&rdquo; Here&rsquo;s how Claude Code
+    actually does it &mdash; the best-documented production example, in two layers:</p>
+    <div class="trace">
+<span class="turn">── layer 1: microcompaction (continuous) ──────────────────</span><br>
+<span class="keep">keep </span> the ~5 most recent tool results, fully visible (the "hot tail")<br>
+<span class="drop">clear</span> older tool results → "[Old tool result content cleared]"<br>
+<span class="note">note </span> everything cleared stays on disk, re-fetchable by path<br>
+<br>
+<span class="turn">── layer 2: full compaction (at threshold) ────────────────</span><br>
+<span class="keep">write</span> a structured summary: intent · decisions · files touched ·<br>
+       errors &amp; fixes · user messages · pending tasks · current work<br>
+<span class="keep">keep </span> the 5 most recently accessed files<br>
+<span class="keep">re-add</span> tool definitions, skills, CLAUDE.md (the stable prefix)<br>
+<span class="drop">drop </span> the raw transcript<br>
+    </div>
+    <p>The keep-vs-drop philosophy: preserve <em>decisions, unresolved bugs, and intent</em>; drop
+    <em>raw tool output</em> (it&rsquo;s reversible &mdash; the file is still on disk). Prefer reversible
+    compression (replace content with a path or URL) before lossy summarization. And compact <em>before</em>
+    the degradation zone, not when you hit the wall.</p>
+    <div class="callout"><strong>The human-in-the-loop version:</strong> the &ldquo;frequent intentional
+    compaction&rdquo; workflow &mdash; Research &rarr; Plan &rarr; Implement, where a human reviews a written
+    research doc and plan doc between phases, and each phase starts with a fresh window seeded from those
+    docs. Teams report shipping a week&rsquo;s work in a day on 300k-line codebases this way. You already do
+    a version of this when you have Claude Code write a plan before coding.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>What&rsquo;s genuinely new in 2026</h2>
+    <div class="cards">
+      <div class="card"><div class="n blue">&#8599;</div><div>
+        <h3>Agentic retrieval demoted static RAG</h3>
+        <p>The decision tree flipped: fits in context &rarr; put it in; agent can grep files &rarr; let it
+        grep; only truly huge corpora &rarr; vector search. Claude Code&rsquo;s grep/read loop is the
+        exemplar. &ldquo;Build a vector index&rdquo; is no longer the default first move.</p>
+      </div></div>
+      <div class="card"><div class="n purple">&#9635;</div><div>
+        <h3>Context compression, literally</h3>
+        <p>Research frontier: rendering text as <em>images</em> for ~10&times; compression at 97% fidelity
+        (optical compression), and sharing KV-caches between agents instead of text. Not production practice
+        yet &mdash; watch this space.</p>
+      </div></div>
+      <div class="card"><div class="n orange">&#8734;</div><div>
+        <h3>Million-token windows didn&rsquo;t kill any of this</h3>
+        <p>Context rot persists and prefill cost scales with tokens, so the effective quality window stays
+        far below the advertised one. The framing just shifted: from &ldquo;fit everything&rdquo; to
+        &ldquo;minimize prefill compute without degrading quality.&rdquo;</p>
+      </div></div>
+      <div class="card"><div class="n green">&#9776;</div><div>
+        <h3>The recipe standardized</h3>
+        <p>Planning todo + filesystem + ephemeral subagents + memory files &mdash; the Claude Code shape
+        &mdash; is now the generic &ldquo;deep agent&rdquo; stack, shipped as reusable harnesses by LangChain
+        and others. Learn one, you&rsquo;ve learned them all.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">6.</span>Try it &mdash; write a real task brief</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~15 minutes, in Claude Code</span>
+      <p>The most transferable skill on this page is the four-part subagent brief. Practice it on your own repo:</p>
+      <ol>
+        <li>Write a brief for a subagent using all four parts &mdash; <strong>objective</strong> (&ldquo;find every
+        place my resume pipeline hard-codes a file path&rdquo;), <strong>output format</strong> (&ldquo;a table:
+        file, line, path found&rdquo;), <strong>tool guidance</strong> (&ldquo;grep and read only, no edits&rdquo;),
+        <strong>boundaries</strong> (&ldquo;only pdf-resume/ and scripts, skip archives&rdquo;).</li>
+        <li>Give it to Claude Code prefixed with: <em>&ldquo;delegate this to a subagent exactly as briefed.&rdquo;</em></li>
+        <li>When it returns, judge the handoff: did you get a compact table (good isolation &mdash; 1&ndash;2k tokens
+        back) or a rambling dump? Did it stay inside the boundaries?</li>
+        <li>Now deliberately re-run with a vague version (&ldquo;check my repo for path issues&rdquo;) and compare.
+        You&rsquo;ll see Anthropic&rsquo;s duplication-and-drift finding first-hand.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">7.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">All different from the Part 1 picks; ranked for suitability.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=vtugjs2chdA" target="_blank" rel="noopener">Context Engineering Our Way to Long-Horizon Agents &mdash; Harrison Chase</a></h3>
+        <div class="meta">Sequoia Capital &middot; ~1 hr &middot; Jan 2026</div>
+        <p><strong>Start here.</strong> The most current synthesis of everything on this page &mdash; compaction,
+        filesystem state, subagents, memory &mdash; from the person who generalized the deep-agent stack.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=rmvDxxNubIg" target="_blank" rel="noopener">No Vibes Allowed: Hard Problems in Complex Codebases &mdash; Dex Horthy</a></h3>
+        <div class="meta">AI Engineer &middot; ~25 min &middot; 2025</div>
+        <p>Intentional compaction and the &ldquo;dumb zone&rdquo; in anger: Research &rarr; Plan &rarr; Implement
+        on a 300k-line codebase. The practitioner sequel to his short talk on the Part 1 page.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=4pLFKxOym90" target="_blank" rel="noopener">Building Deep Agents &mdash; Harrison Chase</a></h3>
+        <div class="meta">LangChain &middot; ~35 min &middot; Jan 2026</div>
+        <p>The code-level version of #1: todos, virtual filesystem, subagent task tool, skills. Pick this one
+        if you want patterns you can implement this week.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=E0k9Ppq6yXY" target="_blank" rel="noopener">Stateful Agents Workshop &mdash; Charles Packer (MemGPT/Letta)</a></h3>
+        <div class="meta">AI Engineer &middot; ~2 hr workshop &middot; Apr 2025</div>
+        <p>The deepest treatment of memory architecture anywhere: tiered memory, agents managing their own
+        memory, hands-on. Long &mdash; treat it as the memory chapter&rsquo;s textbook.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="context-engineering.html">&larr; 2 &middot; Context Engineering (Part 1)</a>
+    <a href="prompt-engineering.html">Next: 3 &middot; Prompt Engineering &rarr;</a>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 2b (deep dive)</footer>
+</div>
+</body>
+</html>
