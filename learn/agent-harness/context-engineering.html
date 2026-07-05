@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>2 &middot; Context Engineering</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.diagram-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 10px 8px; margin: 18px 0; text-align: center; }
+.diagram-box .caption { font-size: 12px; color: var(--dim); padding: 10px 16px 8px; text-align: center; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.trace { background: #0a0d12; border: 1px solid var(--border2); border-radius: 10px; padding: 16px 18px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.9; overflow-x: auto; margin: 14px 0; }
+.trace .turn { color: var(--dim); }
+.trace .think { color: var(--purple); }
+.trace .act { color: var(--accent); }
+.trace .obs { color: var(--orange); }
+.trace .done { color: var(--green); font-weight: 600; }
+.trace .bad { color: var(--red); }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.fail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 14px 0; }
+.fail { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fail h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--red); }
+.fail p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+.pagenav .disabled { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 2 of 6</div>
+  <h1 class="title">Context Engineering</h1>
+  <div class="sub">The model has no memory &mdash; only a window. Deciding what fills that window
+  each lap is the hardest and highest-leverage problem in harness design.</div>
+  <div class="reading-time">~8 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      Remember from Topic 1: every lap, the model <strong>re-reads the entire transcript from
+      scratch</strong>. That transcript lives in a fixed-size <strong>context window</strong>
+      (roughly a few hundred pages of text). Context engineering is the discipline of deciding,
+      lap by lap, <strong>what deserves to be in that window</strong> &mdash; because everything
+      in it costs money, and the wrong stuff in it makes the model dumber, not smarter.
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>What&rsquo;s actually in the window</h2>
+    <p>Picture the window as a jar that refills every lap. Some contents are fixed;
+    the rest is under your control as the harness designer:</p>
+
+    <div class="diagram-box">
+      <svg viewBox="0 0 640 300" width="100%" style="max-width:640px" role="img" aria-label="Context window contents diagram">
+        <!-- jar outline -->
+        <rect x="40" y="20" width="280" height="260" rx="12" fill="none" stroke="#30363d" stroke-width="2"/>
+        <text x="180" y="14" text-anchor="middle" fill="#6e7681" font-size="11">the context window (fixed size)</text>
+
+        <!-- layers -->
+        <rect x="52" y="32" width="256" height="38" rx="6" fill="rgba(188,140,255,0.12)" stroke="#bc8cff"/>
+        <text x="180" y="50" text-anchor="middle" fill="#bc8cff" font-size="12" font-weight="700">System prompt + tool definitions</text>
+        <text x="180" y="63" text-anchor="middle" fill="#8b949e" font-size="10">fixed; the agent&rsquo;s personality &amp; menu</text>
+
+        <rect x="52" y="76" width="256" height="30" rx="6" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <text x="180" y="95" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">Your request</text>
+
+        <rect x="52" y="112" width="256" height="120" rx="6" fill="rgba(227,179,65,0.10)" stroke="#e3b341"/>
+        <text x="180" y="134" text-anchor="middle" fill="#e3b341" font-size="12" font-weight="700">The transcript (grows every lap)</text>
+        <text x="180" y="152" text-anchor="middle" fill="#8b949e" font-size="10">every tool call + every result:</text>
+        <text x="180" y="167" text-anchor="middle" fill="#8b949e" font-size="10">file contents, command output, errors&hellip;</text>
+        <text x="180" y="186" text-anchor="middle" fill="#e3b341" font-size="10" font-weight="600">&#9650; this is what fills the jar</text>
+
+        <rect x="52" y="238" width="256" height="30" rx="6" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-dasharray="4 3"/>
+        <text x="180" y="257" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="600">headroom for the model to think</text>
+
+        <!-- pressure gauge right side -->
+        <rect x="380" y="40" width="34" height="220" rx="8" fill="#161b22" stroke="#30363d"/>
+        <rect x="384" y="150" width="26" height="106" rx="6" fill="rgba(248,81,73,0.35)"/>
+        <rect x="384" y="110" width="26" height="40" rx="0" fill="rgba(227,179,65,0.3)"/>
+        <text x="397" y="30" text-anchor="middle" fill="#6e7681" font-size="10">fill level</text>
+        <text x="430" y="120" fill="#e3b341" font-size="10">getting slow &amp; pricey</text>
+        <text x="430" y="200" fill="#f85149" font-size="10">quality degrades,</text>
+        <text x="430" y="214" fill="#f85149" font-size="10">then hard limit</text>
+      </svg>
+      <div class="caption">The system prompt and request are small. Tool results are what blow the budget &mdash; one careless &ldquo;read the whole log file&rdquo; can eat a quarter of the jar.</div>
+    </div>
+
+    <div class="callout"><strong>Cost is per lap, not per task.</strong> Because the model re-reads
+    everything each lap, a bloated transcript isn&rsquo;t paid for once &mdash; it&rsquo;s paid for on
+    <em>every remaining lap</em>. Junk added on lap 3 of a 40-lap run gets re-read 37 times.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>Why more context makes models worse</h2>
+    <p>The naive intuition is &ldquo;give the model everything, let it figure it out.&rdquo;
+    Practice says the opposite. The known failure modes:</p>
+    <div class="fail-grid">
+      <div class="fail"><h4>Context rot</h4><p>As the window fills, attention spreads thin and accuracy on <em>everything</em> drops &mdash; even the early, important parts.</p></div>
+      <div class="fail"><h4>Lost in the middle</h4><p>Models recall the start and end of the window well, the middle poorly. Key facts buried mid-transcript get missed.</p></div>
+      <div class="fail"><h4>Context poisoning</h4><p>One wrong observation (a stale file, a misleading error) stays in the window and keeps steering later laps off course.</p></div>
+      <div class="fail"><h4>Distraction</h4><p>Irrelevant detail competes with relevant detail. A model reading 10 files to answer about 1 performs worse than one reading just the 1.</p></div>
+    </div>
+    <p class="muted">So the goal is not the <em>biggest</em> context &mdash; it&rsquo;s the
+    <strong>smallest set of high-signal tokens</strong> that lets the model make the right next move.
+    That phrase is worth memorizing; it&rsquo;s the field&rsquo;s working definition of context engineering.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>The four tools of the trade</h2>
+    <p>Every serious harness (Claude Code included) uses the same four techniques to keep the jar lean:</p>
+    <div class="cards">
+      <div class="card"><div class="n blue">1</div><div>
+        <h3>Just-in-time retrieval &mdash; don&rsquo;t pre-load, fetch</h3>
+        <p>Instead of stuffing everything the agent <em>might</em> need up front, give it tools to
+        pull what it <em>does</em> need, when it needs it: search the codebase, read one file,
+        grep for a symbol. The window holds answers, not the whole library.</p>
+      </div></div>
+      <div class="card"><div class="n purple">2</div><div>
+        <h3>Compaction &mdash; summarize and keep going</h3>
+        <p>When the window nears full, the harness pauses, has the model write a dense summary of
+        the transcript (decisions made, files touched, what&rsquo;s left), then restarts the loop
+        with that summary in place of the raw history. Lossy but survivable &mdash; like a
+        detective&rsquo;s case notes replacing hours of interviews.</p>
+      </div></div>
+      <div class="card"><div class="n orange">3</div><div>
+        <h3>Subagent isolation &mdash; spend someone else&rsquo;s window</h3>
+        <p>Big exploratory work (search 200 files for a pattern) is delegated to a subagent with its
+        own <em>fresh</em> window. It burns 100k tokens reading files, then returns a 3-line
+        conclusion. The parent&rsquo;s jar gains 3 lines, not 200 files. This is the #1 practical
+        reason subagents exist.</p>
+      </div></div>
+      <div class="card"><div class="n green">4</div><div>
+        <h3>External memory &mdash; write it down, outside the window</h3>
+        <p>Notes files, to-do lists, memory directories: the agent writes durable facts to disk and
+        re-reads them on demand. Anything on disk costs nothing until fetched. This is how agents
+        survive across sessions and week-long tasks.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>Watch it go wrong, then right</h2>
+    <p>Same task &mdash; &ldquo;why is checkout slow?&rdquo; &mdash; run by a naive harness and a
+    context-engineered one:</p>
+    <div class="trace">
+<span class="turn">── naive harness ──────────────────────────────────────────</span><br>
+<span class="turn">lap 1</span>  <span class="act">ACT  </span> read_file("logs/app.log")           <span class="bad">← 80k tokens of log</span><br>
+<span class="turn">lap 2</span>  <span class="act">ACT  </span> read_file("src/checkout/")  ×12 files <span class="bad">← 60k more</span><br>
+<span class="turn">lap 3</span>  <span class="think">THINK</span> <span class="bad">window 90% full; model now re-reads 140k junk tokens</span><br>
+       <span class="bad">      every lap; misses the slow query buried mid-log&hellip;</span><br>
+<br>
+<span class="turn">── context-engineered harness ─────────────────────────────</span><br>
+<span class="turn">lap 1</span>  <span class="act">ACT  </span> grep("timeout|slow", "logs/app.log")  <span class="obs">← 40 matching lines</span><br>
+<span class="turn">lap 2</span>  <span class="act">ACT  </span> spawn_subagent("scan src/checkout, find DB calls")<br>
+       <span class="obs">OBSRV</span> "One unindexed query in cart_total.js:88" <span class="obs">← 1 line back</span><br>
+<span class="turn">lap 3</span>  <span class="act">ACT  </span> read_file("cart_total.js", lines 70–100) <span class="obs">← 30 lines</span><br>
+<span class="turn">lap 4</span>  <span class="done">DONE </span> "Unindexed query on cart_items; add index on user_id."<br>
+    </div>
+    <p class="muted">Same model, same tools, wildly different outcome &mdash; purely from what was
+    allowed into the window. That&rsquo;s why this topic, not model choice, is where senior
+    engineers earn their keep.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>Try it &mdash; see your own window</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~10 minutes, in Claude Code</span>
+      <p>You&rsquo;ll inspect a real context window, watch it fill, and watch two of the four techniques fire.</p>
+      <ol>
+        <li>In any repo, run <code>/context</code>. That&rsquo;s the jar diagram, live: see how much
+        the system prompt, tools, and messages each occupy.</li>
+        <li>Ask something that forces heavy reading, e.g. <em>&ldquo;search this whole repo and
+        summarize how the resume pipeline works.&rdquo;</em> If Claude Code spawns an Explore
+        subagent, you&rsquo;re watching <strong>technique 3</strong>: many files read over there,
+        a short conclusion returned here.</li>
+        <li>Run <code>/context</code> again. Compare the messages share against step 1.</li>
+        <li>Run <code>/compact</code> &mdash; that&rsquo;s <strong>technique 2</strong> on demand.
+        Read the summary it produces: notice what it chose to keep (decisions, paths) and what it
+        threw away (raw file dumps).</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">6.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">Researched and ranked for suitability &mdash; not just popularity.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=_IlTcWciEC4" target="_blank" rel="noopener">Context Engineering for Agents &mdash; Lance Martin, LangChain</a></h3>
+        <div class="meta">Latent Space &middot; 63 min &middot; ~42K views &middot; Sep 2025</div>
+        <p><strong>Start here.</strong> The most systematic treatment: the offload / reduce / retrieve / isolate
+        framework with diagrams of how Claude Code and others implement compaction, subagents, and memory. Zero hype.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=IS_y40zY-hc" target="_blank" rel="noopener">Advanced Context Engineering for Agents &mdash; Dex Horthy</a></h3>
+        <div class="meta">YC Root Access &middot; 15 min &middot; ~208K views &middot; Aug 2025</div>
+        <p>Best short watch: intentional compaction, keeping the window ~40% full, and fresh-window subagents
+        so the parent context stays clean. Dense and practical.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=TUjQuC4ugak" target="_blank" rel="noopener">Context Rot: How Input Tokens Impact Performance &mdash; Chroma</a></h3>
+        <div class="meta">Chroma &middot; 8 min &middot; ~185K views &middot; Jul 2025</div>
+        <p>The evidence: chart-driven summary of an 18-model study on why performance degrades as input grows
+        (lost-in-the-middle, distractors). The empirical backbone of this whole page.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=6_BcCthVvb8" target="_blank" rel="noopener">Context Engineering with LangChain and Manus</a></h3>
+        <div class="meta">LangChain &middot; 61 min &middot; ~67K views &middot; Oct 2025</div>
+        <p>Deepest practitioner detail: KV-cache-friendly layouts, tool masking, filesystem-as-context,
+        multi-agent isolation tradeoffs. Watch after #1.</p>
+      </div>
+      <div class="video">
+        <h3>5 &middot; <a href="https://www.youtube.com/watch?v=D7_ipDqhtwk" target="_blank" rel="noopener">How We Build Effective Agents &mdash; Barry Zhang, Anthropic</a></h3>
+        <div class="meta">AI Engineer &middot; 15 min &middot; ~496K views &middot; Apr 2025</div>
+        <p>Also #1 on the Agentic Loop page &mdash; rewatch its &ldquo;think from the agent&rsquo;s context
+        window&rdquo; section, which lands differently after this topic.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="agentic-loop.html">&larr; 1 &middot; The Agentic Loop</a>
+    <span class="disabled">Next: Tool Design (coming soon) &rarr;</span>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 2 of 6</footer>
+</div>
+</body>
+</html>
