@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Developer Intelligence Platform &mdash; Layered Model</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --amber:#d29922; --purple:#bc8cff; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1200px; margin: 0 auto; padding: 16px 24px 48px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; color: var(--muted); }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.hero { padding: 24px 0 8px; }
+.hero h1 { font-size: 28px; margin: 0 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.hero .sub { color: var(--muted); font-size: 14px; max-width: 760px; line-height: 1.55; }
+
+/* toolbar */
+.toolbar { position: sticky; top: 49px; z-index: 15; background: rgba(13,17,23,0.92); backdrop-filter: blur(8px); padding: 12px 0; margin: 12px 0 8px; border-bottom: 1px solid var(--border); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.modes { display: flex; gap: 4px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.mode { appearance: none; background: transparent; border: 0; color: var(--muted); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+.mode.active { background: var(--accent); color: #0d1117; }
+.mode:hover:not(.active) { color: var(--text); }
+.mode-hint { color: var(--dim); font-size: 12.5px; }
+.legend { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.dot.buy { background: var(--accent); }
+.dot.build { background: var(--green); }
+.dot.touch { background: var(--amber); }
+
+/* use-case chips */
+.uc-rail { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 18px; }
+.chip { background: var(--bg2); border: 1px solid var(--border2); color: var(--text); font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all .12s ease; }
+.chip .em { font-size: 14px; }
+.chip:hover { border-color: var(--accent); }
+.chip.sel { background: var(--purple); color: #0d1117; border-color: var(--purple); }
+.chip.dim { opacity: 0.32; }
+
+/* layout */
+.grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
+@media (max-width: 880px){ .grid { grid-template-columns: 1fr; } }
+
+/* stack */
+.stack { display: flex; flex-direction: column; gap: 7px; }
+.layer { position: relative; background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: 9px; padding: 12px 14px; cursor: pointer; transition: all .12s ease; }
+.layer:hover { border-color: var(--border2); transform: translateX(2px); }
+.layer.sel { border-color: var(--accent); border-left-color: var(--accent); background: var(--bg3); }
+.layer.touch { border-left-color: var(--amber); box-shadow: inset 3px 0 0 var(--amber); }
+.layer .lnum { color: var(--dim); font-size: 11px; font-weight: 700; letter-spacing: .5px; }
+.layer .lname { font-size: 14.5px; font-weight: 700; margin: 1px 0 3px; }
+.layer .ltag { color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.layer .automation { margin-top: 8px; height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.layer .automation > i { display: block; height: 100%; background: linear-gradient(90deg,var(--green),var(--accent)); border-radius: 3px; }
+.layer .auto-label { font-size: 10.5px; color: var(--dim); margin-top: 4px; }
+
+/* detail panel */
+.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 11px; padding: 18px 20px; position: sticky; top: 118px; }
+.panel .kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); font-weight: 700; }
+.panel h2 { font-size: 19px; margin: 4px 0 8px; font-weight: 700; }
+.panel .desc { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.panel h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 18px 0 8px; font-weight: 700; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill { font-size: 12px; padding: 5px 10px; border-radius: 7px; font-weight: 600; border: 1px solid transparent; }
+.pill.buy { background: rgba(88,166,255,0.13); color: #79c0ff; border-color: rgba(88,166,255,0.28); }
+.pill.build { background: rgba(63,185,80,0.14); color: #56d364; border-color: rgba(63,185,80,0.3); }
+.pill.uc { background: rgba(188,140,255,0.13); color: #d2a8ff; border-color: rgba(188,140,255,0.3); cursor: pointer; }
+.pill.uc:hover { border-color: var(--purple); }
+.ai-how { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: var(--text); }
+.metric { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.metric b { color: var(--amber); }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.flow .step { background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; padding: 4px 9px; }
+.flow .arr { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 34px 0 8px; line-height: 1.7; }
+.foot-note { max-width: 780px; margin: 0 auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Developer Intelligence Platform</h1>
+  <div class="nav-links">
+    <a href="index.html"><strong>&larr; Dashboard</strong></a>
+    <a href="skills.html">Skills</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>The Developer Intelligence Platform, in layers</h1>
+    <div class="sub">A layered model of how a modern engineering-platform org (archetype: Compass Staff role) automates the SDLC. The pattern is constant: <b>buy the raw tools, build the company-specific correlation and AI-action layer on top.</b> Toggle between the platform layers and the AI use cases &mdash; selecting one cross-highlights the other.</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="modes">
+      <button class="mode active" data-mode="layer">Layer view</button>
+      <button class="mode" data-mode="usecase">Use-case view</button>
+    </div>
+    <span class="mode-hint" id="modeHint">Click a layer to see its tools and what's built vs bought.</span>
+    <div class="legend">
+      <span><i class="dot buy"></i> Bought / baseline</span>
+      <span><i class="dot build"></i> Built / extended</span>
+      <span><i class="dot touch"></i> Touched by use case</span>
+    </div>
+  </div>
+
+  <div class="uc-rail" id="ucRail"></div>
+
+  <div class="grid">
+    <div class="stack" id="stack"></div>
+    <div class="panel" id="panel"></div>
+  </div>
+
+  <footer>
+    <div class="foot-note">
+      Every use case follows one shape: <b>collect signals (MCP) &rarr; engineer context + retrieve history &rarr; LLM reasons against rules &rarr; take a bounded action &rarr; measure the result</b>. The metrics layer closes the loop, proving AI moved velocity/reliability rather than just adding activity.<br>
+      Personal analysis page &middot; unencrypted &middot; noindex.
+    </div>
+  </footer>
+</div>
+
+<script>
+const LAYERS = [
+  { id:'l6', num:'LAYER 6', name:'Developer Experience / Surface', tag:'Where developers actually consume it: portal, IDE, Slack, the PR itself. Golden paths and intuitive workflows.',
+    auto:35, autoLabel:'AI assists (suggestions, summaries) but humans drive the surface',
+    buy:['Backstage portal UI','IDE (VS Code / JetBrains)','Slack','GitHub PR UI'], build:['Golden paths','Intuitive self-service workflows','In-context nudges'], uc:['workflow','codegen','troubleshoot'] },
+  { id:'l5', num:'LAYER 5', name:'AI Intelligence + Action Tier', tag:'Not a UI layer &mdash; the reasoning + action tier that plugs into everything below. Context, retrieval, LLM decisions, bounded actions.',
+    auto:90, autoLabel:'The most heavily automated tier &mdash; this IS the AI layer',
+    buy:['Foundation model APIs (Claude, GPT)','Docling (doc parsing)','Vector DB (Pinecone/Weaviate)'], build:['MCP servers to each system','Context engineering','Retrieval + ranking','Rules/policies &rarr; actions'], uc:['intelli-test','troubleshoot','change','workflow','codegen'] },
+  { id:'l4', num:'LAYER 4', name:'Measurement / Metrics', tag:'Quantify engineering effectiveness so you can prove impact. DORA + SPACE + DX Core 4 + flow/friction.',
+    auto:55, autoLabel:'Auto-computed metrics + AI recommendations on what to fix first',
+    buy:['DX (getDX)','Faros AI','LinearB','Jellyfish','Grafana (render only)'], build:['Org-specific metric definitions','SCM&harr;CI/CD&harr;prod joins','Custom dashboards'], uc:['change','intelli-test'] },
+  { id:'l3', num:'LAYER 3', name:'Catalog / Metadata Backbone', tag:'System of record: what services exist, who owns them, how they depend on each other. Makes every other signal meaningful.',
+    auto:40, autoLabel:'Mostly declarative; AI reads it as the ownership/dependency graph',
+    buy:['Backstage','Cortex','OpsLevel','Port'], build:['Ownership graph','Dependency model feeding the AI tier'], uc:['troubleshoot','change'] },
+  { id:'l2', num:'LAYER 2', name:'Signal / Data Platform', tag:'Ingest, normalize and CORRELATE all signals into one model. This is "the foundation" the JD says to build before the AI layer.',
+    auto:50, autoLabel:'Pipelines automate ingestion; correlation logic is the custom core',
+    buy:['Faros (partial)','Data warehouse','Streaming (Kafka)'], build:['Correlation engine','Unified signal schema','Normalization'], uc:['change','intelli-test','troubleshoot'] },
+  { id:'l1', num:'LAYER 1', name:'SDLC Signal Sources', tag:'The systems that emit the raw signals: source control, CI/CD, build, testing, production telemetry, project management.',
+    auto:25, autoLabel:'Largely used as-is; they emit the raw data everything else consumes',
+    buy:['GitHub','CI/CD (Actions)','Build systems','Test infra','Datadog','Azure Monitor','Jira'], build:['Instrumentation / event hooks'], uc:['intelli-test','troubleshoot','change','codegen'] },
+  { id:'l0', num:'LAYER 0', name:'Cloud / Compute Foundation', tag:'Where everything runs, plus secure execution for AI-generated code before it can touch anything real.',
+    auto:30, autoLabel:'Autoscaling infra; sandbox isolation enables safe AI automation above',
+    buy:['AWS / GCP / Azure','Kubernetes','Firecracker / E2B / Kata'], build:['Secure sandbox for AI-generated code','Isolation + guardrails'], uc:['secure','codegen'] },
+];
+
+const USECASES = [
+  { id:'intelli-test', em:'🧪', name:'Intelligent Testing', layers:['l5','l4','l2','l1'],
+    desc:'Risk-based test selection and auto-generation. Testing plays two roles: a signal source (results, flakiness, coverage) and an AI capability (decide what to test, write tests).',
+    how:'AI reads test signals (L1) + change data (L2), predicts which tests matter for a changeset, and generates tests for edge cases humans miss (timezones, race conditions, boundaries). Gates CI.',
+    engine:'Coding-agent test gen', glue:'Risk model over your test + change history', metric:'change-failure-rate, test cycle time' },
+  { id:'troubleshoot', em:'🚨', name:'AI Production Troubleshooting', layers:['l6','l5','l3','l2','l1'],
+    desc:'Turn a flood of alerts into a short list of explained issues, routed to the right team, with the likely cause linked.',
+    how:'The detection engine is bought (Azure Copilot Observability Agent, Datadog Bits AI/Watchdog). You feed it Compass context: catalog ownership (L3) + recent changes (L2) + runbooks, then wire output to action (route, link cause, roll back).',
+    engine:'Azure Copilot Observability Agent / Datadog Bits AI', glue:'Context + ownership + action routing', metric:'MTTR, alert noise reduction' },
+  { id:'change', em:'🔎', name:'Automated Change Analysis', layers:['l6','l5','l4','l3','l2','l1'],
+    desc:'Not code review ("is this good?") but risk analysis ("how risky is this change and what is the blast radius?"). A velocity lever.',
+    how:'Correlate a PR/commit/deploy (L1) with change-failure history (L2), affected services (L3), and what broke after similar past changes. AI scores blast radius &rarr; auto-merge low-risk, flag risky for humans.',
+    engine:'LinearB-style auto-merge', glue:'Blast-radius classifier over catalog + history', metric:'review latency, % low-risk auto-merged' },
+  { id:'workflow', em:'🔗', name:'Workflow Orchestration', layers:['l6','l5'],
+    desc:'Chain the other capabilities across SDLC stages so one flow runs ticket &rarr; code &rarr; test &rarr; PR &rarr; deploy.',
+    how:'Multi-step agent orchestration in the AI tier (L5). Each step is a bounded action with a checkpoint; the orchestrator handles retries, failures and human-in-the-loop gates.',
+    engine:'Agent orchestration framework', glue:'Your stage graph + guardrails + checkpoints', metric:'lead time, manual-step count' },
+  { id:'codegen', em:'⌨️', name:'Code Generation / Review', layers:['l6','l5','l1','l0'],
+    desc:'Baseline coding agents under a harness: PR drafter + automated first-pass review.',
+    how:'Claude Code / Cursor / Codex do the coding (L1 signals in, PR out). Your harness (L5) scopes repo access, runs each agent in an isolated sandbox (L0), and posts an automated review pass, surfacing only decisions needing a human.',
+    engine:'Claude Code / Cursor / Codex', glue:'Harness, repo scoping, review gate', metric:'PRs merged, review coverage' },
+  { id:'secure', em:'🛡️', name:'Secure Execution of AI Code', layers:['l0'],
+    desc:'The guardrail that makes every other use case safe: any AI-written code runs isolated before it can merge or touch prod.',
+    how:'Each agent runs in its own Firecracker microVM (E2B / Kata on K8s) &mdash; own kernel, ~125ms boot &mdash; because agents execute generated code. Autoscaled pool, git worktree/branch per agent, merge via PR.',
+    engine:'Firecracker / E2B / Kata', glue:'Sandbox orchestration + policy', metric:'isolation incidents (zero), agent throughput' },
+];
+
+let mode = 'layer';
+let selLayer = null;
+let selUC = null;
+
+const stackEl = document.getElementById('stack');
+const railEl = document.getElementById('ucRail');
+const panelEl = document.getElementById('panel');
+const hintEl = document.getElementById('modeHint');
+
+function ucById(id){ return USECASES.find(u=>u.id===id); }
+function layerById(id){ return LAYERS.find(l=>l.id===id); }
+
+function renderStack(){
+  stackEl.innerHTML = '';
+  LAYERS.forEach(l => {
+    const touched = selUC && ucById(selUC).layers.includes(l.id);
+    const div = document.createElement('div');
+    div.className = 'layer' + (selLayer===l.id?' sel':'') + (touched?' touch':'');
+    div.innerHTML = `<div class="lnum">${l.num}</div><div class="lname">${l.name}</div>`+
+      `<div class="ltag">${l.tag}</div>`+
+      `<div class="automation"><i style="width:${l.auto}%"></i></div>`+
+      `<div class="auto-label">${l.autoLabel}</div>`;
+    div.onclick = () => { selLayer = l.id; if(mode==='usecase'){ mode='layer'; syncModeButtons(); } showLayer(l.id); renderStack(); renderRail(); };
+    stackEl.appendChild(div);
+  });
+}
+
+function renderRail(){
+  railEl.innerHTML = '';
+  USECASES.forEach(u => {
+    const rel = selLayer && !layerById(selLayer).uc.includes(u.id);
+    const c = document.createElement('div');
+    c.className = 'chip' + (selUC===u.id?' sel':'') + (rel?' dim':'');
+    c.innerHTML = `<span class="em">${u.em}</span>${u.name}`;
+    c.onclick = () => { selUC = u.id; if(mode==='layer'){ mode='usecase'; syncModeButtons(); } showUC(u.id); renderStack(); renderRail(); };
+    railEl.appendChild(c);
+  });
+}
+
+function showLayer(id){
+  const l = layerById(id);
+  const ucs = l.uc.map(uid=>{ const u=ucById(uid); return `<span class="pill uc" data-uc="${u.id}">${u.em} ${u.name}</span>`; }).join('');
+  panelEl.innerHTML = `<div class="kicker">${l.num}</div><h2>${l.name}</h2>`+
+    `<div class="desc">${l.tag}</div>`+
+    `<h3>Bought / baseline</h3><div class="pill-row">${l.buy.map(x=>`<span class="pill buy">${x}</span>`).join('')}</div>`+
+    `<h3>Built / extended</h3><div class="pill-row">${l.build.map(x=>`<span class="pill build">${x}</span>`).join('')}</div>`+
+    `<h3>Use cases touching this layer</h3><div class="pill-row">${ucs}</div>`;
+  wireUcPills();
+}
+
+function showUC(id){
+  const u = ucById(id);
+  const ls = u.layers.map(lid=>layerById(lid).name).join(' &middot; ');
+  panelEl.innerHTML = `<div class="kicker">USE CASE</div><h2>${u.em} ${u.name}</h2>`+
+    `<div class="desc">${u.desc}</div>`+
+    `<h3>How the AI works</h3><div class="ai-how">${u.how}</div>`+
+    `<h3>Bought engine vs built glue</h3><div class="pill-row"><span class="pill buy">${u.engine}</span><span class="pill build">${u.glue}</span></div>`+
+    `<div class="metric">Metric it moves: <b>${u.metric}</b></div>`+
+    `<h3>Layers it cuts through</h3><div class="desc" style="font-size:12.5px">${ls}</div>`;
+}
+
+function wireUcPills(){
+  panelEl.querySelectorAll('.pill.uc').forEach(p => {
+    p.onclick = () => { selUC = p.dataset.uc; mode='usecase'; syncModeButtons(); showUC(selUC); renderStack(); renderRail(); };
+  });
+}
+
+function syncModeButtons(){
+  document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  hintEl.textContent = mode==='layer'
+    ? "Click a layer to see its tools and what's built vs bought."
+    : "Click a use case to see how the AI works and which layers it cuts through.";
+}
+
+document.querySelectorAll('.mode').forEach(b => {
+  b.onclick = () => {
+    mode = b.dataset.mode; syncModeButtons();
+    if(mode==='layer'){ if(!selLayer) selLayer='l5'; showLayer(selLayer); }
+    else { if(!selUC) selUC='change'; showUC(selUC); }
+    renderStack(); renderRail();
+  };
+});
+
+// init
+selLayer = 'l5';
+renderStack(); renderRail(); showLayer(selLayer); syncModeButtons();
+</script>
+</body>
+</html>
