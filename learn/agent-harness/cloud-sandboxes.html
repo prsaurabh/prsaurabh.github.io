@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>10.2 &middot; Sandboxes &amp; Compute at Scale</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+th, td { padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--bg2); color: var(--muted); font-weight: 600; font-size: 12px; }
+td { color: var(--text); line-height: 1.5; }
+td .lbl { font-weight: 600; }
+tr:hover td { background: var(--bg2); }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.diagram-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 10px 8px; margin: 18px 0; text-align: center; }
+.diagram-box .caption { font-size: 12px; color: var(--dim); padding: 10px 16px 8px; }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+.pagenav .disabled { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 10 &middot; Agents in the Cloud / 10.2</div>
+  <h1 class="title">Sandboxes &amp; Compute at Scale</h1>
+  <div class="sub">Topic 6 put a sandbox around one agent on your laptop. This is the same idea turned into
+  a fleet: where thousands of agents&rsquo; untrusted, model-written code runs as a hosted service &mdash;
+  and how you keep it fast, isolated, and cheap.</div>
+  <div class="reading-time">~11 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      When an agent runs code it just wrote, the <strong>isolation boundary is the whole product</strong>.
+      The entire market is one tradeoff played out at scale: <strong>stronger isolation vs faster cold start
+      vs higher density (cheaper).</strong> Containers are fast but share the host kernel; microVMs give each
+      sandbox its own kernel behind a hardware wall. Pick your point on that curve, then make idle sandboxes
+      cost nothing with snapshot-and-resume.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">~90ms&ndash;200ms</div><div class="k">cold-start range across the sandbox-as-a-service market</div></div>
+      <div class="stat"><div class="v">5&ndash;30ms</div><div class="k">to resume a Firecracker microVM from a memory snapshot</div></div>
+      <div class="stat"><div class="v">66%</div><div class="k">of orgs hosting GenAI use Kubernetes for some/all of it</div></div>
+      <div class="stat"><div class="v">850K</div><div class="k">daily sandbox runs on Daytona (May 2026), +74% MoM</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>The isolation ladder, at scale</h2>
+    <p>Five models, arranged from &ldquo;shared kernel, fast&rdquo; to &ldquo;own kernel, strong.&rdquo;
+    This is the Topic 6 ladder again, but now the rungs are products you rent:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Model</th><th>Boundary</th><th>Cold start</th><th>Isolation</th><th>GPU</th></tr></thead>
+        <tbody>
+          <tr><td><span class="lbl">Containers</span><br>Docker, runc</td><td>Linux namespaces + cgroups; shared host kernel</td><td>Fastest (tens of ms)</td><td>Weakest &mdash; one kernel exploit escapes to every co-tenant</td><td>Native</td></tr>
+          <tr><td><span class="lbl">WASM / V8 isolates</span></td><td>Language VM; no syscalls at all</td><td>Single-digit ms</td><td>Strong but narrow &mdash; JS/WASM only, no arbitrary binaries</td><td>No</td></tr>
+          <tr><td><span class="lbl">gVisor</span></td><td>User-space kernel intercepts syscalls</td><td>50&ndash;100ms</td><td>Stronger than containers; ~9&ndash;18% syscall overhead</td><td>Weak</td></tr>
+          <tr><td><span class="lbl">Kata Containers</span></td><td>OCI container in a KVM microVM</td><td>150&ndash;300ms</td><td>Hardware boundary, OCI-compatible</td><td>Passthrough</td></tr>
+          <tr><td><span class="lbl">Firecracker microVM</span></td><td>Own guest kernel on KVM; ~5MB/VM</td><td>~120&ndash;200ms; <strong>5&ndash;30ms from snapshot</strong></td><td><strong>Gold standard</strong> for untrusted multi-tenant code</td><td>Needs passthrough</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout"><strong>The boundary that bites:</strong> a Docker sandbox escape affects <em>every
+    other sandbox on that host</em> &mdash; they share one kernel. That&rsquo;s the structural reason the
+    container-based providers win on speed but carry a weaker isolation story than the microVM providers. And
+    a surprise at scale: <strong>networking, not compute, is the real cold-start bottleneck</strong> &mdash;
+    TAP/CNI setup can inflate startup latency by ~260%, and parallel starts degrade sharply past ~400
+    concurrent. The gold-standard projection: ~60% of Kubernetes sandboxed workloads on Firecracker by 2026.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>The sandbox-as-a-service market</h2>
+    <p>The market split into three camps &mdash; security-first (microVM), compute-first (gVisor + GPUs),
+    and speed-first (containers):</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Provider</th><th>Isolation</th><th>Cold start</th><th>GPU</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td><span class="lbl">E2B</span></td><td>Firecracker</td><td>~150ms (5&ndash;30ms snapshot)</td><td>CPU (GPU self-host only)</td><td>pause/resume + fork; ~88&ndash;94% Fortune 100 adoption claim</td></tr>
+          <tr><td><span class="lbl">Modal</span></td><td>gVisor</td><td>sub-second</td><td>Broadest: T4&rarr;B200</td><td>compute-first; watch ~3&ndash;4x sandbox rate multipliers</td></tr>
+          <tr><td><span class="lbl">Daytona</span></td><td>Containers</td><td><strong>~90ms (fastest mainstream)</strong></td><td>Yes</td><td>speed-first; shared-kernel tradeoff</td></tr>
+          <tr><td><span class="lbl">Vercel Sandbox</span></td><td>Firecracker / Fluid</td><td>near-zero cold start</td><td>CPU</td><td>bills only <em>active</em> CPU (not I/O wait) &rarr; up to 95% cheaper for IO-bound</td></tr>
+          <tr><td><span class="lbl">Cloudflare Sandbox SDK</span></td><td>Containers + Durable Objects</td><td>~2&ndash;3s (isolates: ms)</td><td>Limited</td><td>persistent identity via DOs; egress proxy for creds</td></tr>
+          <tr><td><span class="lbl">Northflank</span></td><td>Kata <em>or</em> gVisor, per workload</td><td>&mdash;</td><td>H100/H200/B200 in-price</td><td>BYOC across clouds; long-running + GPU-heavy</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">One-line selector: untrusted code + strong isolation &rarr; Firecracker (E2B, Vercel);
+    GPU/compute-heavy &rarr; gVisor + broad GPUs (Modal, Northflank); raw cold-start speed with softer
+    isolation &rarr; containers (Daytona ~90ms). And read the <em>billing multipliers</em>, not the sticker
+    rate &mdash; Modal&rsquo;s real sandbox bill runs 3&ndash;4x its headline.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>The Kubernetes-native path</h2>
+    <p>Since two-thirds of GenAI orgs already run Kubernetes, the agent-sandbox problem is being solved
+    natively there &mdash; buy-vs-build hinges on whether you already live on K8s:</p>
+    <div class="cards">
+      <div class="card"><div class="n blue">1</div><div>
+        <h3>GKE Agent Sandbox</h3>
+        <p>gVisor isolation (&ldquo;the same tech that secures Gemini&rdquo;), 300 sandboxes/sec/cluster, 90%
+        of allocations under 200ms. Open-sourced as a Kubernetes SIG subproject &mdash; runs on any cluster.
+        New CRDs: Sandbox, SandboxTemplate (the security blueprint), SandboxClaim, SandboxWarmPool.</p>
+      </div></div>
+      <div class="card"><div class="n purple">2</div><div>
+        <h3>Agent Substrate &mdash; for ultra-scale</h3>
+        <p>A thin control plane above Kubernetes for 10s&ndash;100s of millions of agents. Standard K8s chokes
+        on &ldquo;the chatter of millions of sub-second tool calls,&rdquo; so Substrate multiplexes agents
+        on/off ready capacity in real time with data-locality-aware scheduling.</p>
+      </div></div>
+      <div class="card"><div class="n green">3</div><div>
+        <h3>kagent &mdash; agents as CRDs</h3>
+        <p>CNCF project: define agents declaratively, version them in Git, review in PRs, roll out via GitOps.
+        Every agent is a pod. The Topic 5 orchestration you did in prompts, expressed as Kubernetes objects.</p>
+      </div></div>
+      <div class="card"><div class="n orange">4</div><div>
+        <h3>Buy vs build</h3>
+        <p>Buy a service (E2B/Modal/Daytona/Vercel) for sub-200ms managed cold starts without owning
+        microVM networking and warm pools. Run your own (GKE Agent Sandbox / Northflank BYOC) when you live
+        on K8s, need data locality or compliance, or are at the &ldquo;millions of agents&rdquo; scale.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>The capabilities that make agents economical</h2>
+    <div class="diagram-box">
+      <svg viewBox="0 0 640 180" width="100%" style="max-width:640px" role="img" aria-label="Snapshot, fork, resume">
+        <rect x="30" y="70" width="120" height="44" rx="8" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <text x="90" y="88" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">live sandbox</text>
+        <text x="90" y="103" text-anchor="middle" fill="#8b949e" font-size="9">FS + memory + procs</text>
+        <text x="200" y="80" fill="#8b949e" font-size="10">snapshot</text>
+        <line x1="150" y1="92" x2="270" y2="92" stroke="#6e7681" stroke-width="1.5" marker-end="url(#a)"/>
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6e7681"/></marker></defs>
+        <rect x="275" y="70" width="110" height="44" rx="8" fill="rgba(227,179,65,0.12)" stroke="#e3b341"/>
+        <text x="330" y="88" text-anchor="middle" fill="#e3b341" font-size="12" font-weight="700">snapshot</text>
+        <text x="330" y="103" text-anchor="middle" fill="#8b949e" font-size="9">on disk, $0 idle</text>
+        <path d="M385 82 L500 44" stroke="#6e7681" stroke-width="1.5" marker-end="url(#a)"/>
+        <path d="M385 102 L500 140" stroke="#6e7681" stroke-width="1.5" marker-end="url(#a)"/>
+        <text x="452" y="55" fill="#8b949e" font-size="10">resume (5&ndash;30ms)</text>
+        <text x="460" y="132" fill="#8b949e" font-size="10">fork</text>
+        <rect x="505" y="22" width="110" height="40" rx="8" fill="rgba(63,185,80,0.12)" stroke="#3fb950"/>
+        <text x="560" y="46" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">same agent, on</text>
+        <rect x="505" y="120" width="110" height="40" rx="8" fill="rgba(188,140,255,0.12)" stroke="#bc8cff"/>
+        <text x="560" y="138" text-anchor="middle" fill="#bc8cff" font-size="10" font-weight="700">N parallel copies</text>
+        <text x="560" y="152" text-anchor="middle" fill="#8b949e" font-size="9">tree search / A-B</text>
+      </svg>
+      <div class="caption">Snapshot &rarr; resume kills idle cost; snapshot &rarr; fork branches parallel exploration from one prepared base.</div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="n blue">a</div><div>
+        <h3>Snapshot / pause / resume</h3>
+        <p>Capture full filesystem + memory (running processes, loaded state) and resume in ms. An idle agent
+        stops billing yet restores instantly &mdash; the core lever for bursty workloads. This is the
+        cloud-scale version of Topic 10.1&rsquo;s hibernation.</p>
+      </div></div>
+      <div class="card"><div class="n purple">b</div><div>
+        <h3>Fork</h3>
+        <p>Clone full execution state to branch parallel exploration from one prepared base &mdash; no repeated
+        setup. This is what makes the tree-search / multi-attempt patterns from Topic 5 economical.</p>
+      </div></div>
+      <div class="card"><div class="n orange">c</div><div>
+        <h3>Default-deny egress</h3>
+        <p>The norm now: per-sandbox allowlists in the template, plus credential injection via proxy so
+        generated code never holds the real secret. This is Topic 9&rsquo;s trifecta defense, enforced at the
+        fleet level.</p>
+      </div></div>
+      <div class="card"><div class="n green">d</div><div>
+        <h3>Warm pools, backed by suspended VMs</h3>
+        <p>Pre-booted sandboxes hide cold-start latency; backing the pool with <em>suspended</em> VMs rather
+        than live ones makes sub-200ms allocation affordable &mdash; idle cost traded for latency, cheaply.</p>
+      </div></div>
+    </div>
+    <div class="callout" style="border-left-color:var(--red);background:rgba(248,81,73,0.06)"><strong style="color:var(--red)">Reality check &mdash; managed isolation is an approximation.</strong>
+    AWS Bedrock AgentCore&rsquo;s &ldquo;no external access&rdquo; sandbox mode was bypassed in late 2025 via
+    <em>DNS tunneling</em> (encode data in subdomains of an attacker&rsquo;s domain), and its Firecracker
+    metadata service leaked IAM credentials over plain HTTP &mdash; an IMDSv1 rerun inside a microVM. AWS made
+    the v2 metadata service mandatory in Feb 2026 and re-worded the docs from &ldquo;no&rdquo; to
+    &ldquo;limited&rdquo; external access. Lesson (straight from Topic 9): managed sandboxes need egress paths
+    for their own plumbing, so isolation claims are architectural approximations &mdash; layer defenses and
+    monitor egress, don&rsquo;t trust the label.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>GPUs, and the boundary of this page</h2>
+    <p>Two different GPU needs, only one of which lives here:</p>
+    <div class="cards">
+      <div class="card"><div class="n blue">1</div><div>
+        <h3>Agent-generated code that uses a GPU</h3>
+        <p>The agent writes code that trains or runs a model. That needs a GPU <em>inside</em> the sandbox
+        (Modal, Northflank, Daytona, Fly). Friction: GPU passthrough into microVMs is real engineering, and
+        multi-tenant GPU sharing without hardware partitioning shows 55&ndash;145% latency degradation.</p>
+      </div></div>
+      <div class="card"><div class="n orange">2</div><div>
+        <h3>The agent&rsquo;s own reasoning &mdash; out of scope</h3>
+        <p>The LLM driving the loop almost always calls a <em>hosted API</em> (Anthropic/OpenAI/Google), not a
+        self-hosted model, because the TCO favors it below high sustained volume. Self-hosting the
+        inference-serving stack is an inference-infra topic, not a sandbox one. The only thing that matters
+        here: the sandbox fleet stays CPU-dense and cheap because the model lives elsewhere.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">6.</span>The cost move that matters most</h2>
+    <div class="callout blue"><strong>Scale-to-zero + snapshot is the whole game.</strong> An agent idle 95%
+    of the time should hold <em>zero</em> live compute. Snapshot/suspend turns &ldquo;keep the VM hot&rdquo;
+    into &ldquo;restore in ms when a tool call arrives.&rdquo; The corollary bites in production: providers
+    whose working-memory snapshots aren&rsquo;t GA yet force agents to run continuously at full rate just to
+    hold state &mdash; a large hidden cost. And on billing, prefer providers that meter <em>active CPU</em>
+    (Vercel Fluid, Cloudflare) over wall-clock for IO-bound agents that spend most of their time waiting on
+    an LLM or a tool: up to 95% cheaper.</div>
+    <p class="muted">Density decides unit cost: containers/gVisor pack more sandboxes per host (cheaper each,
+    weaker isolation); Firecracker&rsquo;s ~5MB/VM overhead keeps microVM density viable while giving the
+    hardware boundary. Choosing gVisor vs Firecracker is largely a density-vs-isolation cost curve. At the
+    &ldquo;millions of sandboxes&rdquo; frontier the constraint stops being per-sandbox compute and becomes
+    control-plane throughput &mdash; which is exactly why Agent Substrate exists.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">7.</span>Try it &mdash; place your workload on the curve</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~10 minutes, thinking + Claude Code</span>
+      <ol>
+        <li>You&rsquo;ve used a cloud sandbox already: this course&rsquo;s Agent tool can run subagents with
+        <code>isolation: "worktree"</code>, and background/remote tasks run in exactly this kind of hosted
+        sandbox. Ask Claude Code what isolation its background tasks use.</li>
+        <li>Place a workload: for a fleet running <em>untrusted user-submitted</em> Python, which rung of the
+        section-1 ladder do you pick, and why? (Firecracker &mdash; you can&rsquo;t risk a shared-kernel
+        escape across tenants.)</li>
+        <li>Now flip it: an internal agent running <em>your own</em> trusted scripts, latency-critical,
+        thousands per second. Which rung? (Containers or gVisor &mdash; trusted code lets you trade isolation
+        for speed and density.)</li>
+        <li>Cost check: your agent spends 90% of wall-clock waiting on LLM calls. Which billing model saves
+        the most, and which capability keeps idle cost at zero? (Active-CPU billing; snapshot-and-resume.)</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">8.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">Ranked recency-first; dates verified.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=kaX43RRRUKY" target="_blank" rel="noopener">Giving Agents Computers &mdash; Ivan Burazin, Daytona</a></h3>
+        <div class="meta">Latent Space &middot; <strong>May 2026</strong></div>
+        <p><strong>Start here.</strong> The deepest at-scale piece: why Daytona runs on bare metal with a custom
+        scheduler, how a customer runs ~850K sandboxes/day and spins 50K in 75s, plus 60ms starts and snapshot/fork.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=3Okzq3xKeSE" target="_blank" rel="noopener">Building Thousands of Agent Sandboxes &mdash; MCP Academy Live</a></h3>
+        <div class="meta">Daytona &middot; <strong>Mar 2026</strong></div>
+        <p>Live demo spinning up thousands of isolated stateful sandboxes in under ~10s. Concrete walkthrough,
+        not a pitch.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=TBHOOeuMfl4" target="_blank" rel="noopener">The Future of Building AI Agents with E2B &mdash; Vasek Mlejnsky</a></h3>
+        <div class="meta">Ship Happens Podcast &middot; <strong>Feb 4, 2026</strong></div>
+        <p>E2B&rsquo;s founder on building &ldquo;AWS for AI agents&rdquo; with Firecracker microVMs and
+        sub-200ms global boots &mdash; the security-first Firecracker angle.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=5_R_Ixk8ENQ" target="_blank" rel="noopener">Agent Sandbox and Pod Snapshots on GKE &mdash; The Agent Factory</a></h3>
+        <div class="meta">Google Cloud Tech &middot; <strong>Dec 3, 2025</strong></div>
+        <p>The only Kubernetes/GKE Agent Sandbox pick: gVisor-isolated pods per execution plus pod snapshots
+        for near-instant save/restore. Oldest of the four but the sole coverage of the K8s-native path.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="cloud-durable-execution.html">&larr; 10.1 &middot; The Agent Loop as a Cloud Workload</a>
+    <span class="disabled">Next: 10.3 &middot; Connectivity (coming soon) &rarr;</span>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 10.2 &middot; Agents in the Cloud</footer>
+</div>
+</body>
+</html>
