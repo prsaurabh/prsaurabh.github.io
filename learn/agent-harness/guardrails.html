@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>8 &middot; Guardrails</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.diagram-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 10px 8px; margin: 18px 0; text-align: center; }
+.diagram-box .caption { font-size: 12px; color: var(--dim); padding: 10px 16px 8px; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.fw { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 14px 0; }
+.fwi { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fwi h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--accent); }
+.fwi p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.fail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 14px 0; }
+.fail { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fail h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--red); }
+.fail p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+.pagenav .disabled { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 8 of 10</div>
+  <h1 class="title">Guardrails</h1>
+  <div class="sub">Runtime checks wrapped around the loop: validating what goes in, what comes out, and
+  what the agent is about to do &mdash; in milliseconds, on live traffic.</div>
+  <div class="reading-time">~11 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      A guardrail is <strong>an eval promoted to production</strong>: the same judgment you scored offline
+      in Topic 7, now enforced inline with a millisecond budget. And the reason guardrails exist at all:
+      <strong>prompt instructions are probabilistic; checks are deterministic.</strong> &ldquo;Never call
+      delete&rdquo; in a prompt is a hope &mdash; a pre-tool check that rejects delete is a fact.
+      (Who may touch what &rarr; <a href="permissions-sandboxing.html">Topic 6</a>; attacks like prompt
+      injection &rarr; Topic 9.)
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">&le;200ms</div><div class="k">the p50 ceiling &mdash; slower guardrails get switched off by their own teams</div></div>
+      <div class="stat"><div class="v">86&rarr;4.4%</div><div class="k">jailbreak success with Anthropic&rsquo;s constitutional classifiers (now ~1% overhead)</div></div>
+      <div class="stat"><div class="v">+6&ndash;9pp</div><div class="k">task completion from just validating tool-call schemas + idempotency</div></div>
+      <div class="stat"><div class="v">40k / 1M</div><div class="k">benign requests a &ldquo;4% false-positive rate&rdquo; actually blocks</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>Four checkpoints on the loop</h2>
+    <p>Remember the loop from Topic 1? Guardrails are checkpoints bolted onto it &mdash; and an agent
+    crosses them dozens of times per task, which is why their latency discipline matters far more than
+    in a chatbot:</p>
+    <div class="diagram-box">
+      <svg viewBox="0 0 660 190" width="100%" style="max-width:660px" role="img" aria-label="Guardrail checkpoints on the agent loop">
+        <rect x="18" y="70" width="90" height="44" rx="8" fill="#1c232c" stroke="#30363d"/>
+        <text x="63" y="96" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">user input</text>
+        <rect x="190" y="70" width="100" height="44" rx="8" fill="rgba(188,140,255,0.12)" stroke="#bc8cff"/>
+        <text x="240" y="96" text-anchor="middle" fill="#bc8cff" font-size="12" font-weight="700">MODEL</text>
+        <rect x="372" y="70" width="100" height="44" rx="8" fill="rgba(88,166,255,0.12)" stroke="#58a6ff"/>
+        <text x="422" y="96" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">TOOL</text>
+        <rect x="554" y="70" width="90" height="44" rx="8" fill="#1c232c" stroke="#30363d"/>
+        <text x="599" y="90" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">final</text>
+        <text x="599" y="104" text-anchor="middle" fill="#c9d1d9" font-size="12" font-weight="600">answer</text>
+        <line x1="108" y1="92" x2="188" y2="92" stroke="#6e7681" stroke-width="1.5"/>
+        <line x1="290" y1="92" x2="370" y2="92" stroke="#6e7681" stroke-width="1.5"/>
+        <line x1="472" y1="92" x2="552" y2="92" stroke="#6e7681" stroke-width="1.5"/>
+        <path d="M 422 114 Q 330 170 240 114" fill="none" stroke="#6e7681" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="331" y="162" text-anchor="middle" fill="#6e7681" font-size="10">tool result loops back (post-tool check here too)</text>
+        <!-- checkpoints -->
+        <circle cx="148" cy="92" r="13" fill="rgba(63,185,80,0.2)" stroke="#3fb950"/>
+        <text x="148" y="96" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">1</text>
+        <text x="148" y="54" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="600">pre-model</text>
+        <text x="148" y="66" text-anchor="middle" fill="#8b949e" font-size="9">topic, PII in</text>
+        <circle cx="330" cy="92" r="13" fill="rgba(227,179,65,0.2)" stroke="#e3b341"/>
+        <text x="330" y="96" text-anchor="middle" fill="#e3b341" font-size="11" font-weight="700">2</text>
+        <text x="330" y="54" text-anchor="middle" fill="#e3b341" font-size="10" font-weight="600">pre-tool</text>
+        <text x="330" y="66" text-anchor="middle" fill="#8b949e" font-size="9">args, budgets, rate caps</text>
+        <circle cx="512" cy="92" r="13" fill="rgba(248,81,73,0.2)" stroke="#f85149"/>
+        <text x="512" y="96" text-anchor="middle" fill="#f85149" font-size="11" font-weight="700">3</text>
+        <text x="512" y="54" text-anchor="middle" fill="#f85149" font-size="10" font-weight="600">post-model / output</text>
+        <text x="512" y="66" text-anchor="middle" fill="#8b949e" font-size="9">schema, grounding, PII out</text>
+      </svg>
+      <div class="caption">Input rails, action rails, output rails &mdash; plus a post-tool check sanitizing what re-enters the context.</div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="n green">in</div><div>
+        <h3>Input rails</h3>
+        <p>Topic/relevance filters (&ldquo;is this a support question?&rdquo;), PII masking <em>before</em> the
+        text reaches the model or your logs, length and language checks, jailbreak screening (a pointer to
+        Topic 9).</p>
+      </div></div>
+      <div class="card"><div class="n orange">act</div><div>
+        <h3>Action rails &mdash; the ones that bound real damage</h3>
+        <p>Validate tool arguments against schemas and preconditions (<code>amount &le; invoice.balance</code>),
+        enforce spend caps and rate limits outside the model, cap loop iterations. The cheapest big win in the
+        field: schema validation + idempotency alone bought 6&ndash;9 points of task completion.</p>
+      </div></div>
+      <div class="card"><div class="n blue">out</div><div>
+        <h3>Output rails</h3>
+        <p>Schema/format validation, groundedness (&ldquo;does the answer stay within the retrieved
+        context?&rdquo;), toxicity/brand checks, PII redaction on the way out &mdash; the model can leak PII
+        it saw in context even when the input was clean.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>The cost ladder: regex &rarr; classifier &rarr; judge</h2>
+    <p>Every check sits somewhere on a three-rung ladder, and the universal rule is <strong>order checks
+    cheap-to-expensive</strong>:</p>
+    <div class="cards">
+      <div class="card"><div class="n green">1</div><div>
+        <h3>Deterministic (&lt;1ms) &mdash; always on, every step</h3>
+        <p>Regex, schema checks, allowlists, budget counters. Better yet, make the check unnecessary:
+        <strong>structured outputs</strong> constrain decoding so invalid JSON can&rsquo;t be generated at all
+        &mdash; though valid schema &ne; correct values (&ldquo;structured hallucinations&rdquo; still need a
+        semantic check).</p>
+      </div></div>
+      <div class="card"><div class="n orange">2</div><div>
+        <h3>Small classifiers (~10&ndash;160ms) &mdash; at trust boundaries</h3>
+        <p>Fine-tuned 0.6&ndash;8B models (Llama Guard, Qwen3Guard, ShieldGemma) for toxicity, PII, off-topic.
+        The 2026 sweet spot for accuracy-per-dollar &mdash; the &ldquo;$1 guardrails&rdquo; approach in this
+        page&rsquo;s video list.</p>
+      </div></div>
+      <div class="card"><div class="n purple">3</div><div>
+        <h3>LLM-as-judge (1s+) &mdash; final output and high-stakes actions only</h3>
+        <p>Groundedness, brand voice, policy nuance. Too slow to run inline on every lap &mdash; sample it,
+        run it async, or reserve it for the moments that matter. And use a <em>different model family</em>
+        than the generator: one injection can compromise a same-family judge and generator together.</p>
+      </div></div>
+    </div>
+    <div class="callout"><strong>Three decisions every guardrail needs:</strong> (1) <em>parallel or
+    blocking</em> &mdash; input rails can run concurrently with the model call and cancel it on a trip
+    (faster, but tokens burn before cancellation); output and action rails must block. (2) <em>fail-open or
+    fail-closed</em> &mdash; when the guardrail itself times out, block for irreversible actions, allow-and-log
+    for advisory checks. (3) <em>what happens on failure</em> &mdash; hard refusal, or retry-with-feedback:
+    re-prompt the model with the specific error (&ldquo;field date was not ISO-8601&rdquo;), which fixes most
+    validation failures in one extra lap.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>In the harness: hooks, and the eval &rarr; guardrail pipeline</h2>
+    <div class="cards">
+      <div class="card"><div class="n blue">a</div><div>
+        <h3>Hooks are the attachment points</h3>
+        <p>Modern harnesses don&rsquo;t hardcode guardrails &mdash; they expose hooks. Claude Code&rsquo;s
+        pre-tool hook receives the full tool-call JSON and can allow, deny with a reason (fed back to the model
+        as its next observation), escalate to a human, or rewrite the input. A denied pre-tool call is a
+        <em>hard stop</em>; the call never executes. Cost: ~100&ndash;300ms per tool use, generally worth it.</p>
+      </div></div>
+      <div class="card"><div class="n green">b</div><div>
+        <h3>Evals get promoted into guardrails</h3>
+        <p>The 2026 pipeline: prototype a metric as an offline eval (Topic 7) &rarr; validate it online, async,
+        non-blocking &rarr; promote it to an inline guardrail once precision and latency are proven. Corollary:
+        guardrails themselves need evals &mdash; versioned regression corpora and CI that fails when a
+        guardrail&rsquo;s catch rate drifts.</p>
+      </div></div>
+      <div class="card"><div class="n orange">c</div><div>
+        <h3>Costs multiply by step count</h3>
+        <p>100ms in + 150ms out + two tool checks per lap, across 10 laps, is seconds per task &mdash; and paid
+        guardrails bill per evaluation. Mitigations: deterministic checks everywhere, expensive checks only at
+        trust boundaries, check deltas not the whole context, cache verdicts on repeated content.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>The landscape, one line each</h2>
+    <div class="fw">
+      <div class="fwi"><h4>OpenAI (Agents SDK + package)</h4><p>Tripwire guardrails as first-class SDK constructs; a pre-flight/input/output pipeline package with built-ins for PII, jailbreak, off-topic, hallucination.</p></div>
+      <div class="fwi"><h4>Guardrails AI</h4><p>Open-source validator framework: 60+ composable validators, plus the reask pattern (re-call the LLM with structured error feedback).</p></div>
+      <div class="fwi"><h4>NVIDIA NeMo Guardrails</h4><p>Programmable rails runtime with a dialog DSL (Colang); strongest at conversational topic control; runs rails in parallel to hide latency.</p></div>
+      <div class="fwi"><h4>AWS Bedrock Guardrails</h4><p>Managed policy layer usable on any model: content/topic/PII filters, grounding checks, and unique formal-logic Automated Reasoning checks (&ldquo;up to 99%&rdquo; in rule-bound domains).</p></div>
+      <div class="fwi"><h4>Azure AI Content Safety</h4><p>Managed classifiers: harm categories, Prompt Shields for injection, and groundedness detection that can auto-correct ungrounded spans.</p></div>
+      <div class="fwi"><h4>Anthropic</h4><p>Safety pushed into the model layer: constitutional classifiers (jailbreak success 86%&rarr;4.4%; overhead now ~1%); app-level control exposed via harness hooks rather than a guardrails product.</p></div>
+    </div>
+    <p class="muted"><strong>What to guard first, in order:</strong> tool-call validation + hard budget caps
+    (bounds real damage) &rarr; structured outputs (free reliability) &rarr; PII in and out (legal exposure)
+    &rarr; grounding if RAG-based &rarr; topic scope &rarr; toxicity/brand last unless consumer-facing.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>The mistakes everyone makes</h2>
+    <div class="fail-grid">
+      <div class="fail"><h4>Guarding only the input</h4><p>Tools are the real risk surface. An agent with clean inputs and unvalidated tool calls is unguarded where it matters.</p></div>
+      <div class="fail"><h4>Prompt instructions as guardrails</h4><p>&ldquo;Never call delete&rdquo; is probabilistic. The Replit incident (Topic 6) is what that looks like at scale.</p></div>
+      <div class="fail"><h4>Same-family judge and generator</h4><p>Correlated failure: one injection compromises both. Use a different model family for the checker.</p></div>
+      <div class="fail"><h4>LLM judges on every lap</h4><p>Latency death. Judges belong at trust boundaries, sampled, or async.</p></div>
+      <div class="fail"><h4>Set-and-forget</h4><p>A near-zero hit rate is dead weight paying latency for nothing; a sudden spike is an attack or a drifted prompt. Dashboard hit rates; alert on deltas.</p></div>
+      <div class="fail"><h4>Forgetting streaming</h4><p>An output rail that only sees the full completion moderates nothing &mdash; the user already read the text. Check chunks as they stream.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">6.</span>Try it &mdash; build a real guardrail for your resume rules</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~15 minutes, in Claude Code</span>
+      <p>Your resume rules (&ldquo;no em-dashes&rdquo;) live in CLAUDE.md &mdash; which makes them prompt
+      instructions: probabilistic. Promote one to a deterministic guardrail:</p>
+      <ol>
+        <li>Ask Claude Code: <em>&ldquo;add a PreToolUse hook that blocks any Edit or Write to files under
+        pdf-resume/ if the new content contains an em-dash (&mdash;), with a deny reason explaining the
+        rule.&rdquo;</em></li>
+        <li>Test it: ask Claude to insert an em-dash into resume-draft.html. Watch the hard stop &mdash; and
+        watch the deny reason come back as the model&rsquo;s next observation (retry-with-feedback, live).</li>
+        <li>Test the false-positive side: make a legitimate edit with no dash and confirm it passes. That&rsquo;s
+        the FPR check from section 5, at n=1.</li>
+        <li>Reflect: the rule existed in CLAUDE.md all along. What class of failure did you just eliminate,
+        and which checkpoint (1, 2, or 3 from the diagram) does your hook sit at?</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">7.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">Ranked recency-first; dates verified.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=YZHPEkfy2kc" target="_blank" rel="noopener">$1 AI Guardrails: The Unreasonable Effectiveness of Finetuned ModernBERTs</a></h3>
+        <div class="meta">AI Engineer &middot; 44 min &middot; ~7K views &middot; <strong>Apr 16, 2026</strong></div>
+        <p><strong>Start here.</strong> The deepest technical pick: building cheap, fast classifier guardrails
+        for production &mdash; rung 2 of the cost ladder, from someone who ships it.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=rQE3w8Qjx98" target="_blank" rel="noopener">The Complete AI Security Course: Guardrails, Evals &amp; AgentOps</a></h3>
+        <div class="meta">Krish Naik &middot; 7h 48m &middot; ~59K views &middot; <strong>Jun 17, 2026</strong></div>
+        <p>The newest and broadest: a full course spanning guardrails, evals, memory, and AgentOps.
+        Very long &mdash; jump to the guardrails sections.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=xpHHuJOA-io" target="_blank" rel="noopener">Guardrails That Scale: Production-Ready AI Agents in 2026</a></h3>
+        <div class="meta">Relevance AI &middot; 57 min &middot; new upload &middot; <strong>May 8, 2026</strong></div>
+        <p>A dedicated session on production agent guardrails at scale &mdash; vendor webinar, but squarely
+        on this page&rsquo;s topic.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=ruiLq0OzjkI" target="_blank" rel="noopener">Guardrails with LangChain: Crash Course for Safe AI Agents</a></h3>
+        <div class="meta">Krish Naik &middot; 38 min &middot; ~33K views &middot; <strong>Mar 4, 2026</strong></div>
+        <p>The most code-level pick: hands-on input/output validation rails inside an agent framework.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="evals.html">&larr; 7 &middot; Evals</a>
+    <span class="disabled">Next: Security (coming soon) &rarr;</span>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 8 of 10</footer>
+</div>
+</body>
+</html>
