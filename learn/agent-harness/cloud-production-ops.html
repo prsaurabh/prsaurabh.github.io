@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>10.5 &middot; Production Ops</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 860px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+.reading-time { font-size: 12px; color: var(--dim); }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.trace { background: #0a0d12; border: 1px solid var(--border2); border-radius: 10px; padding: 16px 18px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.9; overflow-x: auto; margin: 14px 0; }
+.trace .c { color: var(--dim); }
+.trace .sp { color: var(--accent); }
+.trace .tool { color: var(--green); }
+.trace .cost { color: var(--orange); }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+.card .n { width: 28px; height: 28px; border-radius: 8px; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.n.blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.35); }
+.n.green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.35); }
+.n.purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.35); }
+.n.orange { background: rgba(227,179,65,0.15); color: var(--orange); border: 1px solid rgba(227,179,65,0.35); }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.fw { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 14px 0; }
+.fwi { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fwi h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--accent); }
+.fwi p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.fail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 14px 0; }
+.fail { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.fail h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--red); }
+.fail p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+.exercise { background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 18px 20px; }
+.exercise .label { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+.exercise p, .exercise li { font-size: 14px; line-height: 1.65; }
+.exercise ol { margin: 8px 0 0; padding-left: 22px; }
+.exercise li { margin-bottom: 8px; color: var(--text); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+.videos { display: grid; gap: 10px; margin-top: 14px; }
+.video { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.video h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.video .meta { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.video p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+.pagenav { display: flex; justify-content: space-between; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 14px; }
+.pagenav .disabled { color: var(--dim); }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Agent Harness Engineering</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; All topics</a>
+    <a href="../../dashboard/index.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 10 &middot; Agents in the Cloud / 10.5</div>
+  <h1 class="title">Production Ops</h1>
+  <div class="sub">The day-2 job: keeping a fleet of non-deterministic agents observable, affordable, and
+  reliable. Topic 7 taught you to grade an agent offline; this is how you watch it in production, at scale,
+  without going broke or blind.</div>
+  <div class="reading-time">~11 min read &middot; 1 exercise at the end</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea on this page</span>
+      <strong>You can&rsquo;t debug what you can&rsquo;t trace.</strong> A status code tells you the endpoint
+      answered; it says nothing about <em>why the agent did what it did</em>. Production ops for agents rests on
+      one substrate &mdash; a span for every decision, tool call, and model call &mdash; and everything else
+      (online evals, cost attribution, alerting) is a query over those traces. And you alert on
+      <strong>deltas, not absolutes</strong>, because a non-deterministic system has no fixed &ldquo;correct&rdquo; number.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">~15&times;</div><div class="k">tokens a multi-agent run burns vs chat &mdash; the cost that bites first</div></div>
+      <div class="stat"><div class="v">+483%</div><div class="k">enterprise AI spend 2024&rarr;2026, even as per-token price fell ~280&times;</div></div>
+      <div class="stat"><div class="v">100 / 5%</div><div class="k">deterministic checks on all traffic; LLM-judge on a ~5% sample, async</div></div>
+      <div class="stat"><div class="v">40&ndash;70%</div><div class="k">cost cut from model routing + semantic caching</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>Tracing: a span per decision</h2>
+    <p>The accepted floor in 2026 is a span for every step, not a health check on the endpoint. One session
+    fans out to dozens of model calls and tool calls; you need to see the whole chain:</p>
+    <div class="trace">
+<span class="c">── one session, one trace ─────────────────────────────────</span><br>
+<span class="sp">invoke_agent</span>  "why is checkout slow?"            <span class="cost">1,240 tok  $0.004</span><br>
+&nbsp;&nbsp;<span class="sp">chat</span>        plan next step                    <span class="cost">890 tok    $0.003</span><br>
+&nbsp;&nbsp;<span class="tool">execute_tool</span> grep(logs)                        <span class="cost">&mdash;</span><br>
+&nbsp;&nbsp;<span class="sp">chat</span>        interpret matches                 <span class="cost">2,100 tok  $0.007</span><br>
+&nbsp;&nbsp;<span class="tool">execute_tool</span> mcp: db.explain(query)  <span class="c">← nests via trace context</span><br>
+&nbsp;&nbsp;<span class="sp">chat</span>        conclude                          <span class="cost">640 tok    $0.002</span><br>
+<span class="c">trace-root tags: user=42 · tenant=acme · task=perf-debug</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="n blue">a</div><div>
+        <h3>OpenTelemetry GenAI is the standard &mdash; and still experimental</h3>
+        <p>Instrument to the OTel GenAI semantic conventions (<code>invoke_agent</code>, <code>chat</code>,
+        <code>execute_tool</code> spans; <code>gen_ai.usage.*_tokens</code> metrics), <em>not</em> a vendor SDK,
+        so backends stay swappable. Caveat: as of mid-2026 the GenAI and MCP conventions are still
+        &ldquo;Development&rdquo; &mdash; pin the opt-in flag and expect attribute churn.</p>
+      </div></div>
+      <div class="card"><div class="n purple">b</div><div>
+        <h3>One trace across many agents</h3>
+        <p>Propagate trace context across every agent-to-agent and agent-to-tool hop so a subagent&rsquo;s spans
+        nest under the orchestrator. This is what makes a 15&times;-fanout multi-agent run debuggable instead of
+        a pile of orphaned spans. MCP servers enrich the same trace via W3C Trace Context.</p>
+      </div></div>
+      <div class="card"><div class="n orange">c</div><div>
+        <h3>Tail sampling, never head</h3>
+        <p>Failures are rare and high-value &mdash; head sampling drops them at emit time. Sample at the tail:
+        keep 100% of errors, 100% of low eval-score traces, 100% of high-cost traces, and 1&ndash;10% of clean
+        ones for baselines. This also keeps observability cost sublinear.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>Evals in production: the online layer</h2>
+    <p>Topic 7 was the offline test suite. In production you run the same judgments on <em>live</em> traffic
+    &mdash; monitoring, not testing:</p>
+    <div class="cards">
+      <div class="card"><div class="n green">1</div><div>
+        <h3>Deterministic on 100%, judge on a sample</h3>
+        <p>Cheap rule checks (schema, business rules, guardrail pass/fail) run on all traffic. The LLM judge
+        runs <strong>async on ~5% of sessions</strong> &mdash; <em>never</em> synchronously on the critical
+        path, or you double latency and cost. Treat judge scores as a noisy, calibrated estimator, trended
+        over time.</p>
+      </div></div>
+      <div class="card"><div class="n blue">2</div><div>
+        <h3>Drift is the early-warning signal</h3>
+        <p>Watch judge-score distributions, guardrail pass rates, refusal rates, retry rates. A spike in PII
+        detections or hallucination-fails tells you something changed <em>before</em> users report it &mdash;
+        a model update, a prompt tweak, a shift in inputs.</p>
+      </div></div>
+      <div class="card"><div class="n orange">3</div><div>
+        <h3>The offline &rarr; online &rarr; guardrail pipeline</h3>
+        <p>Offline evals gate the deploy; online evals monitor live; then production findings get promoted into
+        real-time guardrails (Topic 8). For inline guardrails use small fast models, not full LLM judges &mdash;
+        reserve those for the sampled/async layer. The whole loop from Topics 7&ndash;8, closed at cloud scale.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>Cost: the line item that explodes</h2>
+    <div class="callout"><strong>The counterintuitive fact of 2026:</strong> per-token prices fell ~280&times;
+    from 2024, yet average enterprise AI spend rose ~483%. The units got cheaper; the units-per-task got
+    dramatically more expensive &mdash; because agents do tool calls, retrieval, and multi-turn reasoning, and
+    multi-agent fanout burns ~15&times; the tokens of a chat. If a task doesn&rsquo;t genuinely decompose,
+    you pay that multiplier without earning it &mdash; route those to a single-agent path.</div>
+    <div class="cards">
+      <div class="card"><div class="n blue">a</div><div>
+        <h3>Attribute at the trace root</h3>
+        <p>Tag per-user / per-tenant / per-task at the root and propagate down, so every span inherits it and
+        you can break spend down by customer, feature, or team. Observability tools estimate per-call cost from
+        token counts &times; public pricing automatically.</p>
+      </div></div>
+      <div class="card"><div class="n orange">b</div><div>
+        <h3>Cardinality discipline</h3>
+        <p>High-cardinality IDs (user_id, session_id) live in <em>trace</em> data, searchable &mdash; never as
+        <em>metric</em> tags, or your cost metrics explode. Metric tags are for bounded dimensions: model, env,
+        service, error type.</p>
+      </div></div>
+      <div class="card"><div class="n green">c</div><div>
+        <h3>Route and cache for cost</h3>
+        <p>Cheap/local model for simple prompts, frontier model for hard ones, decided per request; plus
+        semantic caching. Together they cut spend 40&ndash;70%. Budget alerts sit on the per-tenant cost
+        metric. (Note: tracing + a 5% judge sample is itself a real line item &mdash; tail sampling keeps it
+        sublinear.)</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>Deployment &amp; reliability for non-deterministic fleets</h2>
+    <div class="cards">
+      <div class="card"><div class="n purple">1</div><div>
+        <h3>Rainbow deployments &mdash; drain, don&rsquo;t kill</h3>
+        <p>You met this on 10.1: agents run for minutes to hours, so you keep N versions live, route new sessions
+        to the new one, and let old versions <em>drain</em> to completion. Temporal&rsquo;s worker versioning
+        pins each run to the version it started on. Killing a pod with a 6-hour agent on it is the mistake.</p>
+      </div></div>
+      <div class="card"><div class="n blue">2</div><div>
+        <h3>Autoscale on queue depth; retry with idempotency</h3>
+        <p>Scale on queue depth + response time, not CPU (KEDA, scale-to-zero). And every side-effecting tool
+        call needs an idempotency key &mdash; retrying a payment without one double-charges. Enforce a retry/token
+        budget so a stuck agent can&rsquo;t loop-spend forever.</p>
+      </div></div>
+      <div class="card"><div class="n orange">3</div><div>
+        <h3>SLOs on distributions, not per-request</h3>
+        <p>Same input &rarr; different trajectory, so a raw success-rate SLO is noise. Define SLOs on aggregate
+        signals &mdash; p95 latency, cost-per-task, aggregate online-eval score, guardrail pass-rate &mdash; and
+        alert on <em>distribution shifts</em>, spending error budget against those aggregates.</p>
+      </div></div>
+    </div>
+    <div class="callout"><strong>The distinctly-2026 problem: the model-deprecation treadmill.</strong>
+    Providers retire model snapshots on ~12-month cycles (Claude Opus 4 / Sonnet 4 pins retired June 2026). Use
+    an alias like <code>claude-opus-4</code> and behavior changes silently under you; pin a snapshot and it hard-fails
+    at retirement. The mature answer is a <strong>model registry</strong> mapping every call site &rarr; pinned
+    snapshot &rarr; last eval date &rarr; owning team, plus running your Topic 7 eval suite against the <em>next</em>
+    model nightly &mdash; so a forced migration is a config change, not a fire drill. Also worth knowing:
+    ~60% of production agent failures trace to provider capacity limits, which is why the AI gateway (10.3) doubles
+    as a cross-provider failover layer.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>The tool landscape, one line each</h2>
+    <div class="fw">
+      <div class="fwi"><h4>LangSmith</h4><p>End-to-end platform, best for LangChain/LangGraph teams; closed source; also sells the deploy runtime from 10.4.</p></div>
+      <div class="fwi"><h4>Langfuse</h4><p>The leading genuinely-OSS/self-host option; OTel-native (acquired by ClickHouse, Jan 2026).</p></div>
+      <div class="fwi"><h4>Braintrust</h4><p>Evaluation-first, quality-as-engineering; trace-to-test, CI-native, auto-optimization.</p></div>
+      <div class="fwi"><h4>Arize / Phoenix</h4><p>Enterprise ML+LLM monitoring; Phoenix is OSS and OTel-native; strongest drift detection.</p></div>
+      <div class="fwi"><h4>Datadog / AgentOps</h4><p>Folds tokens + cost + traces into the APM dashboards you already run. Best if you&rsquo;re on Datadog.</p></div>
+      <div class="fwi"><h4>MLflow</h4><p>OSS; ties agent tracing/eval into an existing ML lifecycle. For teams standardized on MLflow.</p></div>
+    </div>
+    <div class="callout blue"><strong>Build-vs-buy, cleanly:</strong> own the <em>instrumentation</em> (OTel
+    GenAI conventions, so you&rsquo;re not locked to a vendor SDK); buy the <em>backend</em> (storage,
+    dashboards, eval UI, alerting). Self-host Langfuse/Phoenix when data residency or trace-volume cost
+    demands it; buy SaaS when you&rsquo;d rather not run ClickHouse and Kubernetes yourself.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">6.</span>What to monitor first, and what breaks</h2>
+    <p>In priority order: <strong>(1) cost per task + token usage</strong> (the exploding line item, and the
+    15&times; multiplier bites first), <strong>(2) online eval score + guardrail pass-rate</strong>,
+    <strong>(3) tool-call error/retry rate</strong>, <strong>(4) p95 latency + time-to-first-token</strong>.
+    Everything else is secondary.</p>
+    <p>The agent-specific mistakes that recur in production:</p>
+    <div class="fail-grid">
+      <div class="fail"><h4>Judge on the critical path</h4><p>Running the LLM judge synchronously doubles latency and cost. Always async, always sampled.</p></div>
+      <div class="fail"><h4>Head-based sampling</h4><p>Silently drops the rare, high-value failures you most need to see.</p></div>
+      <div class="fail"><h4>Retries without idempotency</h4><p>Duplicate charges and writes. Every side-effecting call needs a key.</p></div>
+      <div class="fail"><h4>Killing agents on deploy</h4><p>No rainbow/version pinning means mid-flight sessions die. Drain them.</p></div>
+      <div class="fail"><h4>High-cardinality metric tags</h4><p>user_id/session_id as metric tags explodes cardinality. Keep them in trace data.</p></div>
+      <div class="fail"><h4>Trusting the offline suite as truth</h4><p>It diverges from live behavior. You need online eval + drift monitoring.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">7.</span>Try it &mdash; read your own trace and budget</h2>
+    <div class="exercise">
+      <span class="label">Exercise &middot; ~10 minutes, in Claude Code</span>
+      <ol>
+        <li>You have a live example: the Account &amp; Usage panel in Claude Code is production-ops telemetry for
+        <em>your own</em> agent session. Open it and read what&rsquo;s driving your usage &mdash; it literally
+        attributes cost by contributing factor (subagent-heavy sessions, &gt;150k context). That&rsquo;s
+        section 3&rsquo;s cost attribution, applied to you.</li>
+        <li>Spot the 15&times; multiplier in the wild: your heavy subagent use in this very project is the
+        multi-agent token multiplier. Which of your tasks genuinely decomposed (earning it) vs which could have
+        been single-agent?</li>
+        <li>Design one alert: for a hosted version of your resume agent, write one SLO on a <em>distribution</em>
+        (e.g. &ldquo;p95 cost-per-publish &lt; $X&rdquo;) and one delta alert (&ldquo;refusal rate jumps &gt;2&times;
+        week-over-week&rdquo;). Notice neither is a per-request pass/fail.</li>
+        <li>Trace it back: which earlier topics does this page operationalize? (Topic 1 loop = the spans; Topic 7
+        evals = the online layer; Topic 8 guardrails = the promotion target; 10.1 = rainbow deploys.)</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="videos">
+    <h2><span class="sec">8.</span>Prefer to watch? Hand-picked videos</h2>
+    <p class="muted">Ranked recency-first; dates verified.</p>
+    <div class="videos">
+      <div class="video">
+        <h3>1 &middot; <a href="https://www.youtube.com/watch?v=AqT_7rw6aFI" target="_blank" rel="noopener">Observability for AI Agents: Monitoring MCP Servers &mdash; PlatformCon</a></h3>
+        <div class="meta">Platform Engineering &middot; <strong>~Jun 22, 2026</strong></div>
+        <p><strong>Start here.</strong> Why MCP servers funnel every tool call through one endpoint that classic
+        API monitoring is blind to &mdash; and how to instrument it. Section 1, in practice.</p>
+      </div>
+      <div class="video">
+        <h3>2 &middot; <a href="https://www.youtube.com/watch?v=Jyu3QUA7XXM" target="_blank" rel="noopener">Take AI Agents from Prototype to Production with OpenTelemetry</a></h3>
+        <div class="meta">Microsoft Developer &middot; <strong>Jun 3, 2026</strong></div>
+        <p>A multi-agent app taken to trusted production using the OTel GenAI conventions &mdash; concrete
+        instrumentation for a real harness.</p>
+      </div>
+      <div class="video">
+        <h3>3 &middot; <a href="https://www.youtube.com/watch?v=KgWgv_25Sug" target="_blank" rel="noopener">LLM Observability at Scale: Governing, Monitoring, Securing Agents</a></h3>
+        <div class="meta">circa late Jun 2026</div>
+        <p>The operational triad for agents at scale: cost risk, behavioral blind spots, and controlling data
+        access and actions. On running agents reliably, not eval fundamentals.</p>
+      </div>
+      <div class="video">
+        <h3>4 &middot; <a href="https://www.youtube.com/watch?v=-aM2EDTiaMs" target="_blank" rel="noopener">Everything You Need to Know About Agent Observability &mdash; Raindrop</a></h3>
+        <div class="meta">AI Engineer &middot; <strong>May 7, 2026</strong></div>
+        <p>The &ldquo;Sentry for AI agents&rdquo; team on why agent failures don&rsquo;t look like normal software
+        failures and what production monitoring actually requires. The most agent-specific take.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="pagenav">
+    <a href="cloud-platforms.html">&larr; 10.4 &middot; Managed Platforms</a>
+    <span class="disabled">Next: 10.6 &middot; How Companies Run Agents (coming soon) &rarr;</span>
+  </div>
+
+  <footer>Agent Harness Engineering &middot; Topic 10.5 &middot; Agents in the Cloud</footer>
+</div>
+</body>
+</html>
