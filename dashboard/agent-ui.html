@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Extending Agents to UI &mdash; MCP Apps &amp; the 2026 Stack</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+h2 .tag { font-size: 11px; font-weight: 700; color: var(--accent); background: rgba(88,166,255,0.12); border: 1px solid rgba(88,166,255,0.3); border-radius: 20px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 19px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0; font-size: 13px; }
+.flow .node { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 13px; }
+.flow .node b { color: var(--text); } .flow .node span { color: var(--muted); font-size: 12px; display: block; }
+.flow .arr { color: var(--dim); font-size: 16px; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.proto { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--sc, var(--accent)); border-radius: 10px; padding: 14px 16px; margin-bottom: 11px; }
+.proto .top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
+.proto h3 { font-size: 15.5px; margin: 0; font-weight: 700; }
+.proto .who { font-size: 12px; color: var(--dim); }
+.proto p { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; line-height: 1.6; }
+.proto .use { color: var(--green); font-weight: 600; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pill { font-size: 11.5px; padding: 4px 9px; border-radius: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--muted); }
+.src { font-size: 12px; color: var(--dim); line-height: 1.8; }
+.src a { color: var(--muted); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Developer Intelligence Platform</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; Dashboard</a>
+    <a href="dev-intelligence.html">Layered model</a>
+    <a href="platform-evals.html">Evals</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="dev-intelligence.html">Developer Intelligence Platform</a> / Extending agents to UI</div>
+  <h1 class="title">Extending Agents to UI</h1>
+  <div class="sub">When an agent's answer should be a form, a dashboard, or an approval panel, not a wall of text. As of mid-2026 this settled into a layered protocol stack rather than one winner. The central, extensible choice for a platform already built on MCP is <b>MCP Apps</b>, the official MCP UI extension, and this page leads with it, then covers the rest of the stack and when to use each.</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea</span>
+      Agents outgrew plain text. The question is <em>who draws the UI and where it runs</em>. Four protocols answer different halves of that: MCP Apps lets a <strong>tool return interactive UI into a host</strong> (chat or IDE); A2UI lets an <strong>agent draw a native UI itself</strong>; AG-UI streams an agent's state into <strong>a frontend you own</strong>; A2A is agent-to-agent. If you are already MCP-central, MCP Apps extends that investment instead of adding a parallel UI stack.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">2026-01-26</div><div class="k">MCP Apps shipped as the first official MCP extension</div></div>
+      <div class="stat"><div class="v">110M+</div><div class="k">monthly MCP ecosystem downloads</div></div>
+      <div class="stat"><div class="v">4 hosts</div><div class="k">Claude, ChatGPT, VS Code, Goose shipped MCP Apps support</div></div>
+      <div class="stat"><div class="v">10+</div><div class="k">launch partners: Figma, Slack, Canva, Asana, Box, Salesforce, Hex&hellip;</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>MCP Apps <span class="tag">the primary choice</span></h2>
+    <p>MCP Apps is the official UI extension to the Model Context Protocol (shipped 2026-01-26). It consolidated two earlier efforts, the community <b>MCP-UI</b> project and <b>OpenAI's Apps SDK</b>, into one open standard, so a tool can return an interactive UI component instead of plain text. It is the natural fit here because the platform already speaks MCP everywhere.</p>
+
+    <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px">Three components</h3>
+    <div class="flow">
+      <div class="node"><b>MCP Server</b><span>declares the UI (HTML) + tools, returns a ui:// resource</span></div>
+      <div class="arr">&rarr;</div>
+      <div class="node"><b>Host</b><span>Claude / VS Code / ChatGPT: embeds the View, proxies calls</span></div>
+      <div class="arr">&rarr;</div>
+      <div class="node"><b>View</b><span>sandboxed iframe UI: renders, calls tools back</span></div>
+    </div>
+    <p>The tool returns a <code>ui://</code> resource; the host renders it in a <b>sandboxed iframe</b>; the View and host talk over <b>JSON-RPC 2.0 via postMessage</b>. Every View-to-host message is an auditable MCP JSON-RPC call, and the host stays in control of everything the View can do.</p>
+
+    <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px">Why it's safe enough for enterprise</h3>
+    <div class="cards">
+      <div class="card"><h3>Sandbox isolation</h3><p>The View runs in a restricted iframe, no access to the parent DOM, cookies, or localStorage, no navigating the parent, no scripts in the host context. It can only speak through postMessage.</p></div>
+      <div class="card"><h3>Restrictive-by-default networking</h3><p>Servers declare the domains their UI needs via CSP metadata, and hosts enforce it. Declare nothing and no external connection is allowed, which shuts down data exfiltration to undeclared servers.</p></div>
+      <div class="card"><h3>Pre-declared, reviewable templates</h3><p>Tools declare their UI templates ahead of time, so a host can prefetch, cache, and security-review them before anything runs, rather than rendering arbitrary code on the fly.</p></div>
+      <div class="card"><h3>Graceful degradation</h3><p>Hosts advertise UI support on connect; servers check before registering UI tools. On a host without MCP Apps, the same tool just returns text. Nothing breaks.</p></div>
+    </div>
+
+    <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px">What teams build with it</h3>
+    <div class="cards">
+      <div class="card"><h3>Approval &amp; review panels</h3><p>An infra change rendered as diagrams, security-group tables, IAM diffs, and cost estimates, so an approver sees what changes and what depends on what, inline. A natural fit for gating agent actions in a dev platform.</p></div>
+      <div class="card"><h3>Dashboards &amp; data exploration</h3><p>Interactive charts and sortable tables the user filters and drills into without leaving the conversation or exporting anything.</p></div>
+      <div class="card"><h3>Forms &amp; multi-step workflows</h3><p>Structured input and guided flows instead of the agent parsing free text, which cuts a whole class of misunderstanding.</p></div>
+    </div>
+    <div class="callout blue"><strong>Where it's shipping.</strong> Hosts: Claude, ChatGPT, VS Code, Goose. In VS 2026 the Azure MCP Server became first-party, managing Azure from natural-language prompts in the IDE. Launch partners include Figma, Slack, Canva, Asana, Box, monday.com, Hex, Salesforce. A 2026-07-28 MCP spec release candidate continues to fold the extension into the core standard.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>The rest of the stack, and when to use each</h2>
+    <p>MCP Apps covers "a tool returns UI into a host." The other three protocols answer different halves of the agent-UI problem, and they compose rather than compete:</p>
+
+    <div class="proto" style="--sc:#bc8cff">
+      <div class="top"><h3>A2UI</h3><span class="who">Agent-to-UI &middot; Google + CopilotKit &middot; Apache-2.0</span></div>
+      <p><span class="use">Use when the agent should draw the interface itself.</span> A streaming protocol where the agent emits a <b>blueprint of native components</b>, not arbitrary code, so the UI renders natively across web, mobile, and desktop and inherits the host app's styling and accessibility. Newest of the four, and explicitly designed to combine with MCP Apps.</p>
+    </div>
+
+    <div class="proto" style="--sc:#3fb950">
+      <div class="top"><h3>AG-UI</h3><span class="who">Agent-User Interaction &middot; CopilotKit</span></div>
+      <p><span class="use">Use when you own the frontend and need a live, stateful session.</span> An event-based transport that streams an agent's execution state, messages, tool calls, state patches, lifecycle signals, into a frontend application you control, as it happens.</p>
+    </div>
+
+    <div class="proto" style="--sc:#58a6ff">
+      <div class="top"><h3>A2A</h3><span class="who">Agent-to-Agent &middot; Linux Foundation</span></div>
+      <p><span class="use">Use for agent-to-agent coordination</span>, not UI at all. Included because it is the other half of the stack: discovery, task lifecycle, and messaging between agents across frameworks.</p>
+    </div>
+
+    <div class="callout"><strong>The mental model.</strong> A2A (agent &harr; agent) &rarr; MCP (agent &harr; tools) &rarr; AG-UI (agent &harr; your frontend runtime) &rarr; A2UI (agent &harr; a UI it draws). MCP Apps is the "tool returns UI inside a host" path within MCP. There is no single winner, you pick the layer by who draws the UI and where it runs. For an MCP-central platform, MCP Apps is the extensible default, with A2UI as the declarative complement.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>Why MCP Apps was the right central bet here</h2>
+    <p>The platform already exposes everything, repos, CI/CD, internal systems, over MCP. Adding UI through MCP Apps means one protocol, one security model (the same sandbox and capability negotiation), and one integration surface, instead of a second UI stack to build, govern, and maintain. It degrades gracefully on hosts that lack it, it is standardized rather than proprietary, and it rides an ecosystem the whole industry is converging on. That is the "scalable, central, extensible" choice, buy into the standard, keep A2UI in view for the cases MCP Apps does not cover.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">&mdash;</span>Sources</h2>
+    <p class="src">
+      MCP Apps announcement &amp; spec &middot; <a href="https://blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps/" target="_blank" rel="noopener">MCP blog (Jan 2026)</a> &middot; <a href="https://github.com/modelcontextprotocol/ext-apps/blob/main/specification/2026-01-26/apps.mdx" target="_blank" rel="noopener">ext-apps spec</a> &middot; <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/" target="_blank" rel="noopener">2026-07 RC</a><br>
+      Security / host implementation &middot; <a href="https://sunpeak.ai/blogs/mcp-app-host-implementation/" target="_blank" rel="noopener">Building an MCP App host</a> &middot; enterprise use cases &middot; <a href="https://webrix.ai/blog/mcp-apps-extension-enterprise-use-cases" target="_blank" rel="noopener">Webrix</a><br>
+      The stack, A2UI / AG-UI / A2A &middot; <a href="https://thenewstack.io/agent-ui-standards-multiply-mcp-apps-and-googles-a2ui/" target="_blank" rel="noopener">The New Stack</a> &middot; <a href="https://developers.googleblog.com/introducing-a2ui-an-open-project-for-agent-driven-interfaces/" target="_blank" rel="noopener">Google A2UI</a> &middot; <a href="https://www.copilotkit.ai/blog/the-state-of-agentic-ui-comparing-ag-ui-mcp-ui-and-a2ui-protocols" target="_blank" rel="noopener">CopilotKit</a>
+    </p>
+  </section>
+
+  <footer>Developer Intelligence Platform &middot; Extending agents to UI &middot; noindex</footer>
+</div>
+</body>
+</html>
