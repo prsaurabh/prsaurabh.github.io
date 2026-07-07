@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Governing the Tooling &mdash; From Shadow MCP to Sanctioned MCP</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --bg2:#161b22; --bg3:#1c232c; --border:#21262d; --border2:#30363d; --text:#c9d1d9; --muted:#8b949e; --dim:#6e7681; --accent:#58a6ff; --green:#3fb950; --purple:#bc8cff; --orange:#e3b341; --red:#f85149; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 900px; margin: 0 auto; padding: 16px 24px 40px; }
+header { border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; background: rgba(13,17,23,0.85); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+header .nav-links { font-size: 13px; }
+header .nav-links a { color: var(--muted); margin: 0 8px; }
+header .nav-links a:hover { color: var(--text); }
+.crumb { font-size: 13px; color: var(--dim); margin-top: 26px; }
+.crumb a { color: var(--muted); }
+h1.title { font-size: 30px; margin: 8px 0 6px; font-weight: 700; letter-spacing: -0.5px; }
+.sub { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 8px; }
+section { margin-top: 38px; }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 12px; padding-top: 6px; }
+h2 .sec { color: var(--dim); font-weight: 600; font-size: 14px; margin-right: 8px; }
+p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
+p.muted { color: var(--muted); }
+.big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
+.big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.stat .v { font-size: 19px; font-weight: 700; color: var(--accent); }
+.stat .k { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.cards { display: grid; gap: 10px; margin: 16px 0; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card h3 { font-size: 14.5px; margin: 0 0 4px; font-weight: 600; }
+.card.risk h3 { color: var(--red); }
+.card p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.6; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+@media (max-width: 760px){ .split { grid-template-columns: 1fr; } }
+.layer { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.layer .k { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; margin-bottom: 6px; }
+.layer.reg { border-top: 3px solid var(--purple); } .layer.reg .k { color: var(--purple); }
+.layer.gw { border-top: 3px solid var(--green); } .layer.gw .k { color: var(--green); }
+.layer h3 { font-size: 16px; margin: 0 0 6px; }
+.layer p { font-size: 13.5px; color: var(--muted); margin: 0 0 8px; line-height: 1.6; }
+.layer ul { margin: 0; padding-left: 18px; } .layer li { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.callout { border-left: 3px solid var(--orange); background: rgba(227,179,65,0.06); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 13.5px; line-height: 1.65; color: var(--muted); }
+.callout strong { color: var(--orange); }
+.callout.blue { border-left-color: var(--accent); background: rgba(88,166,255,0.06); }
+.callout.blue strong { color: var(--accent); }
+.callout.green { border-left-color: var(--green); background: rgba(63,185,80,0.06); }
+.callout.green strong { color: var(--green); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pill { font-size: 11.5px; padding: 4px 9px; border-radius: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--muted); }
+.src { font-size: 12px; color: var(--dim); line-height: 1.8; }
+.src a { color: var(--muted); }
+code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Developer Intelligence Platform</h1>
+  <div class="nav-links">
+    <a href="index.html">&larr; Dashboard</a>
+    <a href="dev-intelligence.html">Layered model</a>
+    <a href="agent-ui.html">Agent UI</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="crumb"><a href="dev-intelligence.html">Developer Intelligence Platform</a> / Governing the tooling</div>
+  <h1 class="title">Governing the Tooling</h1>
+  <div class="sub">Developer tooling grows distributed, every team wires its own agents into its own systems. For AI-productivity tooling that becomes <b>shadow MCP</b>: a sprawl of ungoverned servers with inconsistent auth and no audit. The naive fix is to lock it down. The better one is to <b>govern-and-enable</b>: a gateway + registry control plane that makes the governed path the easy path. This is distinct from the AI platform's tool catalog for building agents and RAG, this governs the coding fleet's reach into repos, CI/CD, and internal APIs.</div>
+
+  <section>
+    <div class="big-idea">
+      <span class="label">The one idea</span>
+      You cannot centralize distributed developer tooling by decree, engineers route around a lockdown and the shadow just goes darker. You centralize it by making the sanctioned path better: a registry that makes sanctioned tools easy to discover, and a gateway that hands teams auth, secrets, least-privilege scoping, and audit <em>for free</em>. Governance stops being a tax and becomes the path of least resistance, which is the only way it actually sticks.
+    </div>
+    <div class="numbers">
+      <div class="stat"><div class="v">Shadow MCP</div><div class="k">named governance track at 2026 summits: "from shadow to sanctioned"</div></div>
+      <div class="stat"><div class="v">Sept 2025</div><div class="k">first confirmed malicious MCP package in the wild</div></div>
+      <div class="stat"><div class="v">2 layers</div><div class="k">registry (discovery) + gateway (enforcement) = the control plane</div></div>
+      <div class="stat"><div class="v">Amazon, Uber,<br>Cloudflare, Kong</div><div class="k">all converged on the same gateway+registry shape</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">1.</span>Why distributed tooling becomes a risk, not just a mess</h2>
+    <p>Sprawl is the default: teams stand up their own MCP servers to connect coding agents to their systems. Left alone it becomes a real attack surface, and MCP sprawl audits are now a recurring hygiene task, like SaaS and endpoint inventories became once shadow IT matured.</p>
+    <div class="cards">
+      <div class="card risk"><h3>Prompt injection</h3><p>Hidden instructions in data or tool output redirect the agent to do something it shouldn't. Still unsolved in 2026, so the surface has to be contained, not assumed away.</p></div>
+      <div class="card risk"><h3>Tool poisoning</h3><p>Agents trust tool metadata, names, descriptions, schemas, to decide what to call. A tampered description silently redirects the agent. A compromised or malicious server in the sprawl is a direct path in.</p></div>
+      <div class="card risk"><h3>Over-privileged agents</h3><p>An agent with broad permissions plus a prompt-injection foothold means the attacker acts with the agent's access. Ungoverned servers rarely scope permissions tightly.</p></div>
+      <div class="card risk"><h3>No audit, no discovery</h3><p>Nobody can answer "which agent called which internal tool, with what, when," or even "how many servers do we have." You can't secure or dedupe what you can't see.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">2.</span>The control plane: registry + gateway</h2>
+    <p>The pattern the industry converged on splits the problem in two. They answer different questions and sit at different layers:</p>
+    <div class="split">
+      <div class="layer reg">
+        <div class="k">Discovery layer</div>
+        <h3>Registry</h3>
+        <p>The single source of truth for what sanctioned tools exist, where they run, what they do, and what auth they need. Teams find approved servers here instead of rebuilding one.</p>
+        <ul>
+          <li>Catalog of servers + capabilities</li>
+          <li>Endpoints and auth requirements</li>
+          <li>Dynamic discovery for agents and IDEs</li>
+        </ul>
+      </div>
+      <div class="layer gw">
+        <div class="k">Enforcement layer</div>
+        <h3>Gateway</h3>
+        <p>The control plane every agent-to-tool call routes through. It answers: is this agent allowed to use this tool, and under what constraints, and it records everything.</p>
+        <ul>
+          <li>Auth: OAuth/OIDC brokered to your IdP</li>
+          <li>RBAC + least-privilege scoping</li>
+          <li>Policy: DLP, fine-grained tool exposure</li>
+          <li>Audit + OpenTelemetry on every call</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout blue"><strong>The four governance capabilities</strong> that have to work together: a centralized catalog (discovery), identity-based access controls, structured audit logging, and real-time policy enforcement. Miss any one and the other three leak.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">3.</span>The 2026 safety controls this unlocks</h2>
+    <div class="cards">
+      <div class="card"><h3>Incremental scope consent</h3><p>The 2026 MCP spec lets a client request the minimum access needed for each operation instead of all permissions upfront, which needs an authorization layer that understands tool-level semantics, exactly what a gateway provides.</p></div>
+      <div class="card"><h3>Human-in-the-loop for high-risk actions</h3><p>Destructive or irreversible operations, deletes, external data transfers, get a human checkpoint via risk classifications and approval flows. Centralize the classification once, apply it everywhere.</p></div>
+      <div class="card"><h3>Default-deny writes + managed secrets</h3><p>Teams that go through the shared platform inherit default-deny write controls, audit logging, and secrets management for free, instead of each getting it wrong on their own.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>Govern-and-enable, not restrict</h2>
+    <p>The tempting response to sprawl is a lockdown, restrict who can stand up servers, gate everything behind approvals. It fails twice: it kills the productivity the tooling exists to create, and engineers route around it, so the shadow goes darker. The move that works is to make the governed path the path of least resistance.</p>
+    <div class="callout green"><strong>The reference model (Cloudflare).</strong> A centralized team runs a shared MCP platform. Teams get approval before exposing internal resources, and in exchange inherit governed infra out of the box, SSO/MFA-backed access, discovery portals, DLP, default-deny writes, audit, and secrets. Adoption happens because the sanctioned path is <em>less work</em>, not because the other path was banned. That is how shadow MCP becomes sanctioned MCP.</div>
+    <p class="muted">Distinct from the AI platform's tool catalog: that catalog exists to help teams <em>build</em> agents and RAG. This control plane governs how the developer-productivity fleet <em>reaches</em> the company's own repos, pipelines, and internal APIs. Same MCP substrate, different problem and different blast radius.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">&mdash;</span>Sources</h2>
+    <p class="src">
+      Gateway + registry control plane &middot; <a href="https://aws.amazon.com/blogs/opensource/governing-ai-assets-at-scale-with-mcp-gateway-and-registry/" target="_blank" rel="noopener">AWS Open Source</a> &middot; <a href="https://konghq.com/blog/learning-center/what-is-a-mcp-gateway" target="_blank" rel="noopener">Kong</a> &middot; <a href="https://www.truefoundry.com/blog/enterprise-mcp-governance-control-audit-secure-mcp-server-access" target="_blank" rel="noopener">TrueFoundry</a><br>
+      Reference architecture &middot; <a href="https://blog.cloudflare.com/enterprise-mcp/" target="_blank" rel="noopener">Cloudflare enterprise MCP</a> &middot; <a href="https://www.infoq.com/news/2026/04/cloudflare-mcp/" target="_blank" rel="noopener">InfoQ</a><br>
+      Shadow MCP &amp; sprawl governance &middot; <a href="https://dxheroes.io/insights/mcp-governance-landscape-early-2026" target="_blank" rel="noopener">DX Heroes (early 2026)</a> &middot; <a href="https://www.digitalapplied.com/blog/mcp-dev-summit-2026-readout-protocol-roadmap-analysis" target="_blank" rel="noopener">MCP Dev Summit 2026</a><br>
+      Security: injection, tool poisoning &middot; <a href="https://www.practical-devsecops.com/mcp-security-vulnerabilities/" target="_blank" rel="noopener">Practical DevSecOps</a> &middot; <a href="https://arxiv.org/abs/2603.22489" target="_blank" rel="noopener">MCP threat modeling (arXiv 2026)</a>
+    </p>
+  </section>
+
+  <footer>Developer Intelligence Platform &middot; Governing the tooling &middot; noindex</footer>
+</div>
+</body>
+</html>
