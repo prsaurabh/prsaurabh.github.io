@@ -29,6 +29,12 @@ p { font-size: 14.5px; line-height: 1.7; color: var(--text); margin: 0 0 14px; }
 p.muted { color: var(--muted); }
 .big-idea { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.06)); border: 1px solid rgba(88,166,255,0.3); border-radius: 10px; padding: 16px 20px; font-size: 15px; line-height: 1.65; }
 .big-idea .label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 6px; }
+.gloss { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+.gloss .label { font-size: 11px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 10px; }
+.gloss dl { margin: 0; }
+.gloss dt { font-size: 13.5px; font-weight: 600; color: var(--text); margin-top: 10px; }
+.gloss dt:first-child { margin-top: 0; }
+.gloss dd { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.6; }
 .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
 .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
 .stat .v { font-size: 22px; font-weight: 700; color: var(--accent); }
@@ -83,187 +89,263 @@ footer { color: var(--dim); font-size: 12px; text-align: center; padding: 30px 0
 <div class="container">
   <div class="crumb"><a href="index.html">Agent Harness Engineering</a> / Topic 7 of 10</div>
   <h1 class="title">Evals</h1>
-  <div class="sub">How you <em>know</em> the harness works. The discipline that separates teams that
-  improve on purpose from teams that improve by luck &mdash; and the classic senior-interview separator.</div>
-  <div class="reading-time">~11 min read &middot; 1 exercise at the end</div>
+  <div class="sub">Evals are automated tests for an AI agent. This page explains, from zero, what they are,
+  why testing an agent is harder than testing normal code, and how teams actually do it.</div>
+  <div class="reading-time">~13 min read &middot; 1 exercise at the end</div>
 
   <section>
     <div class="big-idea">
       <span class="label">The one idea on this page</span>
-      An agent eval doesn&rsquo;t grade text &mdash; it grades <strong>what actually happened</strong>: the
-      trajectory the agent took and the end state it left behind. And evals belong at the <strong>start</strong>
-      of the development loop, not the end: write the eval, then build until it passes, and gate every prompt,
-      tool, and model change on the suite. That&rsquo;s eval-driven development &mdash; the 2026 equivalent of
-      test-driven development.
+      An <strong>eval</strong> is a test you run automatically against your AI agent, the same way a unit
+      test checks normal code. The twist: an agent gives a differently worded answer every time you run it,
+      so a good eval never checks the exact words. It checks <strong>what actually happened</strong>.
+      If the agent says &ldquo;I processed your refund,&rdquo; the eval looks in the database for the refund.
+      Write these tests early, and run them on every change. That is the whole discipline.
     </div>
-    <div class="numbers">
-      <div class="stat"><div class="v">89 vs 52%</div><div class="k">teams with observability vs teams actually running evals</div></div>
-      <div class="stat"><div class="v">60&ndash;80%</div><div class="k">of dev time top practitioners spend on error analysis</div></div>
-      <div class="stat"><div class="v">75&rarr;42%</div><div class="k">a 75% per-run success rate is only ~42% for 3-in-a-row (pass^3)</div></div>
-      <div class="stat"><div class="v">20&ndash;50</div><div class="k">real tasks are enough to start &mdash; don&rsquo;t wait for the perfect suite</div></div>
+
+    <div class="gloss">
+      <span class="label">Jargon decoder &mdash; six terms used on this page</span>
+      <dl>
+        <dt>Eval</dt>
+        <dd>Short for &ldquo;evaluation.&rdquo; An automated test: give the agent a task, then use some
+        grading logic to decide pass or fail.</dd>
+        <dt>Trace (or transcript)</dt>
+        <dd>The complete recording of one agent run: everything it said, every tool it called, and every
+        result it got back. Like a flight recorder for one attempt at a task.</dd>
+        <dt>Trajectory</dt>
+        <dd>The path the agent took to finish: which tools it used, in what order, how many steps.</dd>
+        <dt>Grader</dt>
+        <dd>The thing that decides pass or fail. It can be a piece of code, another AI model, or a human.</dd>
+        <dt>LLM-as-judge</dt>
+        <dd>Using a second AI model as the grader. You give it the agent&rsquo;s output plus a written
+        checklist (a <em>rubric</em>) and ask: pass or fail?</dd>
+        <dt>Benchmark</dt>
+        <dd>A public, standardized eval suite (like SWE-bench) used to compare models against each other.</dd>
+      </dl>
     </div>
   </section>
 
   <section>
-    <h2><span class="sec">1.</span>Why agent evals are a different animal</h2>
-    <p>A model eval is single-shot: prompt in, response out, grade it. An agent takes many laps
-    (Topic 1) that <em>modify state</em> &mdash; mistakes compound, and the same task legitimately takes
-    different paths on different runs. Three consequences:</p>
+    <h2><span class="sec">1.</span>Why testing an agent is harder than testing code</h2>
+    <p>A normal unit test is simple because code is predictable: <code>add(2, 2)</code> returns 4 every
+    single time, so you test for exactly 4. An AI agent is not predictable. Ask it the same question twice
+    and you get two differently worded answers, and sometimes two different <em>approaches</em>. One run
+    says a refund takes &ldquo;3 to 5 days,&rdquo; the next says &ldquo;within a week.&rdquo; Both are
+    correct. A test that demands exact text would fail a perfectly good agent.</p>
+    <p>Agents add two more complications. First, they take <strong>many steps</strong>, not one: a small
+    mistake at step 2 quietly snowballs into a big failure by step 8. Second, they <strong>change
+    things</strong> along the way: they write files, update databases, call real services. So testing an
+    agent means answering three separate questions:</p>
     <div class="cards">
       <div class="card"><div class="n blue">1</div><div>
-        <h3>Grade the end state, not the words</h3>
-        <p>The canonical failure: the agent says &ldquo;your refund is processed&rdquo; and no refund exists
-        in the database. Check the environment &mdash; the DB row, the file, the passing tests &mdash; not
-        the claim. And grade what was <em>produced</em>, not the path taken: strong models find valid paths
-        you didn&rsquo;t anticipate, so over-specified trajectory checks create false failures.</p>
+        <h3>Did the real world end up in the right state?</h3>
+        <p>This is the most important check. The classic failure: the agent tells the customer &ldquo;your
+        refund is processed&rdquo; but no refund exists in the database. The words claimed success; reality
+        disagreed. So the eval checks reality: is the database row there? Does the file exist? Do the tests
+        pass? Never grade the agent&rsquo;s claim. Grade the evidence.</p>
       </div></div>
       <div class="card"><div class="n purple">2</div><div>
-        <h3>Run every task multiple times: pass@k vs pass^k</h3>
-        <p>Non-determinism makes one trial meaningless. <strong>pass@k</strong> = at least one of k runs
-        succeeds (fine for research tasks). <strong>pass^k</strong> = all k succeed (what customer-facing
-        agents need). The gap is brutal: 75% per-run is only ~42% pass^3.</p>
+        <h3>Was the path reasonable?</h3>
+        <p>Even a correct result can be reached badly: 40 steps and $3 of AI usage for a task that should
+        take 5 steps and a few cents. A trajectory check puts limits on the path: right tools used, sane
+        number of steps, cost under budget. One warning: don&rsquo;t script the exact path. Good models find
+        valid shortcuts you didn&rsquo;t think of, and a test that demands your path will wrongly fail them.</p>
       </div></div>
       <div class="card"><div class="n orange">3</div><div>
-        <h3>Three altitudes of grading</h3>
-        <p>End-to-end (did it succeed?), trajectory (was the path sound &mdash; right tools, sane turn count,
-        token budget?), and component (which tool or subagent broke?). Production suites run all three;
-        the fanciest benchmark, tau-bench, adds a fourth: did it succeed <em>while following policy</em>?</p>
+        <h3>Did it follow the rules while doing it?</h3>
+        <p>A refund can be issued correctly and still break policy, for example if the agent never checked
+        whether the customer was eligible. Policy checks grade the run against your business rules. This is
+        usually where an AI judge (explained in the next section) comes in, because &ldquo;did it behave
+        appropriately&rdquo; is a judgment call, not a string match.</p>
       </div></div>
     </div>
+    <p>Here is one test case graded all three ways. Notice how the agent can pass two checks and still not
+    be safe to ship:</p>
     <div class="trace">
 <span class="c">── one eval case, graded three ways ───────────────────────</span><br>
 task:      "process a refund for order #4411"<br>
-<span class="ok">outcome  </span> refunds table has row for #4411          <span class="ok">PASS</span>  <span class="c">(deterministic)</span><br>
-<span class="w">trajectory</span> 6 laps, 4 tool calls, $0.11              <span class="w">PASS</span>  <span class="c">(under budget)</span><br>
-<span class="bad">policy   </span> refund issued without checking eligibility <span class="bad">FAIL</span>  <span class="c">(LLM judge + rubric)</span><br>
-<span class="c">verdict: FAIL — the agent that "works" is not yet shippable</span>
+<span class="ok">outcome  </span> refunds table has a row for #4411          <span class="ok">PASS</span>  <span class="c">(checked by code)</span><br>
+<span class="w">trajectory</span> 6 steps, 4 tool calls, $0.11 spent         <span class="w">PASS</span>  <span class="c">(under the limits)</span><br>
+<span class="bad">policy   </span> refund issued without checking eligibility <span class="bad">FAIL</span>  <span class="c">(AI judge + checklist)</span><br>
+<span class="c">verdict: FAIL — an agent that "works" is not yet an agent you can ship</span>
     </div>
   </section>
 
   <section>
-    <h2><span class="sec">2.</span>The eval stack: datasets and graders</h2>
-    <p><strong>Datasets</strong>, in priority order: sampled real production traces, user-reported failures,
-    hand-written edge cases, adversarial cases, synthetic fill. Balance positives and negatives (a
-    &ldquo;should it search the web?&rdquo; eval needs cases where the answer is no). The quality bar for a
-    task: <em>two domain experts would independently reach the same pass/fail verdict</em> &mdash; and if
-    nothing ever passes, suspect the task before the agent.</p>
-    <p><strong>Graders</strong>, three tiers &mdash; the rule is <em>deterministic where possible, LLM judges
-    where necessary, humans judiciously</em>:</p>
+    <h2><span class="sec">2.</span>The three kinds of graders</h2>
+    <p>Every eval needs a grader: something that looks at the run and says pass or fail. There are exactly
+    three options, and the rule of thumb is <em>use code where you can, an AI judge where you must, and
+    humans to keep both honest</em>.</p>
     <div class="cards">
       <div class="card"><div class="n green">a</div><div>
-        <h3>Deterministic checks</h3>
-        <p>String match, unit tests, state assertions, tool-call verification. Fast, cheap, reproducible
-        &mdash; but brittle: one benchmark failed answers for writing &ldquo;96.12&rdquo; instead of
-        &ldquo;96.124991&rdquo;, and fixing grading bugs alone took one model from 42% to 95%.</p>
+        <h3>Code checks &mdash; for facts</h3>
+        <p>Plain code that asserts facts: the database row exists, the number matches, the unit tests pass.
+        Fast, cheap, and gives the same answer every time. The weakness is rigidity. One real benchmark
+        marked answers wrong for writing &ldquo;96.12&rdquo; instead of &ldquo;96.124991&rdquo;, which is a
+        bug in the test, not the agent. Fixing grading bugs like that took one model&rsquo;s measured score
+        from 42% to 95% with no change to the model at all.</p>
       </div></div>
       <div class="card"><div class="n purple">b</div><div>
-        <h3>LLM-as-judge &mdash; designed, not just prompted</h3>
-        <p>Binary pass/fail beats 1&ndash;5 scales (clearer thinking, consistent labels). One isolated judge
-        per dimension, never a composite score. Give the judge an escape hatch (&ldquo;return Unknown&rdquo;).
-        And validate the judge itself against ~100 human-labeled examples &mdash; an unvalidated judge is
-        just vibes with extra steps.</p>
+        <h3>AI judges &mdash; for judgment calls</h3>
+        <p>For fuzzy questions like &ldquo;was this reply polite?&rdquo; or &ldquo;did it follow policy?&rdquo;,
+        you use a second AI model as the grader, with a written checklist of what pass means. Four rules make
+        judges reliable. Ask for a yes/no verdict, not a score out of 10, because &ldquo;7 vs 8&rdquo; means
+        nothing consistent. Give each judge exactly one question, never a combined overall score. Let the judge
+        answer &ldquo;not sure&rdquo; instead of forcing a guess. And before trusting a judge, test the judge:
+        grade about 100 examples by hand and check that the judge agrees with your human answers. An
+        unchecked judge is just a second opinion of unknown quality.</p>
       </div></div>
       <div class="card"><div class="n orange">c</div><div>
-        <h3>Know the judge&rsquo;s biases</h3>
-        <p>Position bias (swap the order and average), verbosity bias (longer &ne; better), self-preference
-        (use a different model family as judge), and calibration drift (recalibrate against humans on a
-        cadence). Frontier judges exceed 50% error on bias stress tests &mdash; treat judges as instruments
-        that need calibration, not oracles.</p>
+        <h3>Humans &mdash; the gold standard, used sparingly</h3>
+        <p>Human review is the most accurate grading and also the slowest and most expensive. Use it for two
+        things: creating those hand-graded examples that validate your AI judges, and periodically spot-checking
+        that the automated graders still agree with human judgment. AI judges have known blind spots: they favor
+        whichever answer they read first (so swap the order and average), they favor longer answers, and they
+        favor answers written by models from their own family. Treat a judge like a measuring instrument that
+        needs recalibration, not an oracle.</p>
       </div></div>
     </div>
   </section>
 
   <section>
-    <h2><span class="sec">3.</span>The lifecycle: CI &rarr; production &rarr; back again</h2>
+    <h2><span class="sec">3.</span>Run every test more than once</h2>
+    <p>Because the agent behaves differently on every run, a single trial tells you almost nothing. The
+    standard practice is to run each test case several times, and there are two very different ways to
+    score the results:</p>
+    <p><strong>pass@k</strong> (say &ldquo;pass at k&rdquo;) asks: out of k tries, did it succeed <em>at least
+    once</em>? That is the right bar when a human will review the output anyway, for example research or
+    brainstorming tasks.</p>
+    <p><strong>pass^k</strong> (say &ldquo;pass to the k&rdquo;) asks: did it succeed <em>every single
+    time</em>? That is the bar for anything customer-facing, because your users do not get k tries. They
+    get one.</p>
+    <p>The gap between those two numbers is brutal, and it is just multiplication. An agent that succeeds
+    75% of the time per run sounds decent. But succeeding three times in a row is 0.75 &times; 0.75 &times;
+    0.75, which is about 42%. Your &ldquo;75% agent&rdquo; fails a majority of customers who use it three
+    times.</p>
+  </section>
+
+  <section>
+    <h2><span class="sec">4.</span>Where the test cases come from</h2>
+    <p>An eval suite is only as good as its test cases. In priority order, the best sources are: real
+    production failures (a user hit this, it broke), real production successes (so you notice if they
+    break later), edge cases you write by hand, deliberately hostile inputs, and only then synthetic
+    filler generated by a model.</p>
+    <p>Three quality rules for the cases themselves. <strong>Keep them unambiguous:</strong> a good test
+    case is one where two experts, working separately, would reach the same pass/fail verdict.
+    <strong>Keep them balanced:</strong> if you are testing &ldquo;should the agent search the web?&rdquo;,
+    include cases where the right answer is <em>no</em>, or the agent learns to always search.
+    <strong>Keep them solvable:</strong> if nothing ever passes a case, suspect the case before the
+    agent.</p>
+    <div class="callout"><strong>Don&rsquo;t wait for the perfect suite.</strong> Teams stall for months
+    thinking they need hundreds of polished cases. In practice 20 to 50 real tasks, pulled from actual
+    failures, is a genuinely useful starting suite. It grows from there.</div>
+  </section>
+
+  <section>
+    <h2><span class="sec">5.</span>The everyday workflow: read, diagnose, automate, repeat</h2>
+    <p>Where do you even find your agent&rsquo;s failure patterns? Not by imagining them. The practitioners
+    who do this well follow a loop called <strong>error analysis</strong>, and it works like a doctor
+    diagnosing before prescribing: examine the patient first, then treat what you actually found.</p>
     <div class="cards">
       <div class="card"><div class="n blue">1</div><div>
-        <h3>CI for agents</h3>
-        <p>The eval suite runs on every PR &mdash; prompt change, tool change, model upgrade &mdash; and posts
-        per-case regressions before merge. This is how Notion, Stripe, and Vercel ship agent changes; Notion
-        credits the loop with a 10&times; jump in issue-triage throughput.</p>
+        <h3>Read the traces</h3>
+        <p>Collect around 100 recorded runs and actually read them. For each failed run, write one plain
+        sentence: what was the <em>first</em> thing that went wrong? Not the last error on screen, the first
+        upstream mistake that caused it. This is the single most repeated advice in the field, and the most
+        skipped. Top teams spend well over half their eval time here.</p>
       </div></div>
       <div class="card"><div class="n green">2</div><div>
-        <h3>Online evals: monitoring is a continuous eval</h3>
-        <p>Cheap deterministic checks on 100% of traffic; sample 5&ndash;10% for LLM-judge scoring; A/B test
-        big changes. Failures found here become next week&rsquo;s eval cases &mdash; the loop closes.</p>
+        <h3>Group the failures, then automate the top ones</h3>
+        <p>Cluster those one-sentence notes into categories: &ldquo;picks the wrong tool,&rdquo; &ldquo;gives
+        up too early,&rdquo; &ldquo;invents order numbers.&rdquo; Now build an automated grader for each of
+        the biggest categories. You are building tests for failures you have actually seen, not failures you
+        imagined. Generic scores like &ldquo;helpfulness: 7/10&rdquo; measure nothing.</p>
       </div></div>
-      <div class="card"><div class="n orange">3</div><div>
-        <h3>Public benchmarks rank models, not your agent</h3>
-        <p>SWE-bench Verified saturated (~95%) within a year; a 2026 Berkeley study exploited eight major agent
-        benchmarks to near-perfect scores without solving the tasks. And simulated-user evals swing up to
-        9 points depending on which model plays the user. Use benchmarks for model choice; build your own
-        suite for your harness.</p>
+      <div class="card"><div class="n purple">3</div><div>
+        <h3>Run the suite on every change</h3>
+        <p>Wire the suite into your build pipeline so it runs automatically on every prompt edit, tool
+        change, and model upgrade, and blocks the change if cases regress. This is exactly how teams like
+        Notion, Stripe, and Vercel ship agent changes without holding their breath.</p>
+      </div></div>
+      <div class="card"><div class="n orange">4</div><div>
+        <h3>Keep watching in production</h3>
+        <p>After shipping, run the cheap code checks on all live traffic and the AI-judge checks on a small
+        sample of it. Whatever fails out there becomes next week&rsquo;s new test cases. The loop closes and
+        the suite keeps getting more realistic.</p>
       </div></div>
     </div>
-    <div class="callout blue"><strong>Tracing comes first.</strong> 89% of teams have observability; only 52%
-    do evals &mdash; the gap is the opportunity. You cannot build eval datasets without traces. The
-    practitioner workflow: collect ~100 traces &rarr; annotate each with its <em>first upstream failure</em>
-    &rarr; cluster into a failure taxonomy &rarr; build judges for the failures you actually observed, not the
-    ones you imagined. Tools: LangSmith, Langfuse (open source), Braintrust (strongest CI loop), Arize Phoenix
-    &mdash; all converging on OpenTelemetry&rsquo;s still-maturing GenAI standard.</div>
+    <div class="callout blue"><strong>One caution about public benchmarks.</strong> Leaderboard scores rank
+    <em>models</em>, not <em>your agent</em>. Public suites get saturated fast (SWE-bench went from hard to
+    ~95% solved within about a year), and a 2026 Berkeley study showed eight major agent benchmarks could be
+    gamed to near-perfect scores without really solving the tasks. Use benchmarks to shortlist a model. To
+    know whether <em>your</em> agent works, there is no substitute for your own suite. Popular tools for
+    the recording-and-testing infrastructure: LangSmith, Langfuse (open source), Braintrust, and Arize
+    Phoenix.</div>
   </section>
 
   <section>
-    <h2><span class="sec">4.</span>The mistakes everyone makes</h2>
+    <h2><span class="sec">6.</span>The mistakes everyone makes</h2>
     <div class="fail-grid">
-      <div class="fail"><h4>Skipping transcript reading</h4><p>The most-repeated advice in the field: you won&rsquo;t know your graders work until you read many trials&rsquo; transcripts and grades.</p></div>
-      <div class="fail"><h4>Generic metrics</h4><p>&ldquo;Helpfulness&rdquo; and &ldquo;coherence&rdquo; scores measure nothing. Build judges from your observed failure taxonomy.</p></div>
-      <div class="fail"><h4>One composite score</h4><p>A single 7.2/10 hides that citations regressed while tone improved. Separate judges per dimension.</p></div>
-      <div class="fail"><h4>Overfitting to the suite</h4><p>Optimizing against the same cases improves scores, not reality. Hold out cases, refresh from fresh traffic, watch for grader loopholes.</p></div>
-      <div class="fail"><h4>Rigid graders</h4><p>Penalizing valid variation (formatting, equivalent paths) makes the eval the bug.</p></div>
-      <div class="fail"><h4>Waiting for the perfect suite</h4><p>20&ndash;50 real cases beat 0 perfect ones. Costs are visible upfront; the benefit &mdash; not manually re-testing at every model release &mdash; compounds forever.</p></div>
+      <div class="fail"><h4>Never reading transcripts</h4><p>Dashboards and scores feel like progress, but until you read real runs you don&rsquo;t know if your graders even work.</p></div>
+      <div class="fail"><h4>Vague, generic metrics</h4><p>&ldquo;Helpfulness&rdquo; and &ldquo;coherence&rdquo; scores sound rigorous and measure nothing. Test for the specific failures you observed.</p></div>
+      <div class="fail"><h4>One combined score</h4><p>A single &ldquo;7.2/10&rdquo; can hide that accuracy got worse while tone got better. Keep one grader per question.</p></div>
+      <div class="fail"><h4>Teaching to the test</h4><p>Tune against the same fixed cases long enough and scores improve while the real agent doesn&rsquo;t. Hold some cases back and keep adding fresh ones from live traffic.</p></div>
+      <div class="fail"><h4>Over-strict graders</h4><p>Failing an agent for harmless differences (formatting, a valid alternate approach) means the test is the bug, not the agent.</p></div>
+      <div class="fail"><h4>Waiting for perfect</h4><p>20 real test cases today beat 500 imaginary ones next quarter. The payoff compounds: you stop hand re-testing everything at every model release.</p></div>
     </div>
-    <p class="muted">On &ldquo;evals are the moat&rdquo;: the sober version is that evals are <strong>compounding
-    infrastructure</strong> &mdash; the durable asset is your failure taxonomy, labeled data, and calibrated
-    judges, which persist while the underlying models churn.</p>
+    <p class="muted">You&rsquo;ll hear the slogan &ldquo;evals are the moat.&rdquo; The sober version: the
+    models you build on will keep changing under you, but your library of real test cases, your catalog of
+    known failure patterns, and your validated judges keep their value. That accumulated testing
+    infrastructure is the durable asset.</p>
   </section>
 
   <section>
-    <h2><span class="sec">5.</span>Try it &mdash; eval your own agent</h2>
+    <h2><span class="sec">7.</span>Try it &mdash; eval your own agent</h2>
     <div class="exercise">
       <span class="label">Exercise &middot; ~20 minutes, in Claude Code</span>
-      <p>Build a real (tiny) eval for the resume-rule-checker from Topic 1:</p>
+      <p>Build a real (tiny) eval suite for the resume-rule-checker you made in Topic 1:</p>
       <ol>
-        <li>Write 6 test bullets in a file: 3 that pass all rules, 3 with one planted violation each
-        (a dash, a &ldquo;Technologies:&rdquo; line, an over-length rewrite). That&rsquo;s your dataset
-        &mdash; balanced, with known answers.</li>
-        <li>Run the checker on all 6. Grade <strong>binary</strong> per bullet: did it reach the correct
-        verdict? Note it caught/missed which planted violation &mdash; that&rsquo;s component-level grading.</li>
-        <li>Run the same 6 <strong>again</strong>. Any bullet that flipped verdicts between runs is your
-        pass^k lesson, live.</li>
-        <li>Read the two transcripts for the worst case. Write one sentence: what was the <em>first upstream
-        failure</em>? Congratulations &mdash; you&rsquo;ve done error analysis, and that sentence is your next
-        prompt fix (Topic 3&rsquo;s exercise, now with a measurement behind it).</li>
+        <li>Write 6 test bullets in a file: 3 that follow all your resume rules, and 3 where you plant
+        exactly one violation each (a dash, a &ldquo;Technologies:&rdquo; line, an over-length rewrite).
+        You now have a small, balanced dataset where you already know every correct answer.</li>
+        <li>Run the checker on all 6. Grade each one yes/no: did it reach the correct verdict? Also note
+        <em>which</em> planted violation it caught or missed. That per-violation note is component-level
+        grading.</li>
+        <li>Run the same 6 again. Any bullet whose verdict flipped between the two runs is
+        non-determinism, live. That&rsquo;s why one run is never enough.</li>
+        <li>Take the worst case, read both of its transcripts, and write one sentence naming the first
+        thing that went wrong. That sentence is error analysis, and it tells you exactly what to fix in
+        your prompt next.</li>
       </ol>
     </div>
   </section>
 
   <section id="videos">
-    <h2><span class="sec">6.</span>Prefer to watch? Hand-picked videos</h2>
+    <h2><span class="sec">8.</span>Prefer to watch? Hand-picked videos</h2>
     <p class="muted">Ranked recency-first; dates verified.</p>
     <div class="videos">
       <div class="video">
         <h3>1 &middot; <a href="https://www.youtube.com/watch?v=QDQT99csHJQ" target="_blank" rel="noopener">Getting Evals Right for LLM Applications &mdash; Interrupt 26</a></h3>
         <div class="meta">LangChain &middot; 18 min &middot; ~6K views &middot; <strong>Jun 12, 2026</strong></div>
-        <p><strong>Start here.</strong> Why vibes-based evaluation fails, bad metric design (1&ndash;100 scales),
-        and criteria drift in LLM judges. Dense for its length.</p>
+        <p><strong>Start here.</strong> Why grading by gut feel fails, why 1&ndash;100 scoring scales are a
+        trap, and how AI judges drift over time. Short and dense.</p>
       </div>
       <div class="video">
         <h3>2 &middot; <a href="https://www.youtube.com/watch?v=9EjWR3QpJYk" target="_blank" rel="noopener">It&rsquo;s 2026, and We&rsquo;re Still Talking Evals</a></h3>
         <div class="meta">MLOps.community &middot; 41 min &middot; new upload &middot; <strong>Apr 27, 2026</strong></div>
-        <p>The eval lifecycle in production from a practitioner who builds and evaluates agents daily,
-        including tooling build-vs-buy.</p>
+        <p>What running evals in production actually looks like day to day, from a practitioner who builds
+        and tests agents daily. Includes whether to buy tooling or build it.</p>
       </div>
       <div class="video">
         <h3>3 &middot; <a href="https://www.youtube.com/watch?v=lEO_Yp4Ks2U" target="_blank" rel="noopener">Why Every Enterprise AI Team Needs Evals (And How to Build Them)</a></h3>
         <div class="meta">AI Native Dev &middot; 34 min &middot; ~1K views &middot; <strong>Mar 26, 2026</strong></div>
-        <p>The process-and-culture view: building an eval practice and eval-driven development inside a team.</p>
+        <p>The team and process view: how to build an eval habit inside a company, not just a script.</p>
       </div>
       <div class="video">
         <h3>4 &middot; <a href="https://www.youtube.com/watch?v=oSjAbx67f0k" target="_blank" rel="noopener">Debug, Evaluate, and Ship Reliable Agents with LangSmith</a></h3>
         <div class="meta">LangChain &middot; 49 min &middot; ~6K views &middot; <strong>Mar 11, 2026</strong></div>
-        <p>The observability half hands-on: tracing every call, trajectory-level evaluators, and debugging
-        agent failures from traces.</p>
+        <p>Hands-on with the recording side: capturing every agent step, grading whole runs, and tracking
+        down failures from the recordings.</p>
       </div>
     </div>
   </section>
