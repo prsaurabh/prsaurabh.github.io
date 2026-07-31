@@ -1,12 +1,18 @@
 # CLAUDE.md
 
+## THIS REPO IS THE OLD PUBLIC PORTFOLIO — NOT THE PERSONAL WEBSITE
+
+The personal website is **https://prsaurabh.com**: private, on AWS, behind a Cognito login. Repo: `~/Documents/Repo/personal-site`. All new pages, dashboards, plans, and prep content go THERE, not here.
+
+This repo (prsaurabh.github.io) is only the old public portfolio: public articles, projects, resume link. Work here ONLY when the user explicitly asks for the GitHub site or public portfolio. Never publish private content here. The `dashboard/` and `prep/` StatiCrypt pages are legacy, migrated to prsaurabh.com; do not add new ones.
+
 ## Resume prep is in another repo
 
 Resume preparation and the resume source of truth live in the **interview-prep** repo (`~/Documents/Repo/interview-prep`, source: `pdf-resume/resume-draft.html`). This website only serves the finished PDF (`assets/resume.pdf`); do resume editing in interview-prep, not here.
 
 ## ACTIVE CORRECTIONS (remove when resolved)
 - **Answer everything that is asked.** Address every distinct part of the message; if a part cannot be done, say so explicitly instead of dropping it.
-- **Match answer length to the question; default to short.** Lead with the direct answer, add only the detail the question genuinely needs, and stop. Expand only when explicitly asked for depth.
+- **Match answer length to the question; default to short-to-medium.** Lead with the direct answer, add only the detail the question genuinely needs, and stop. Medium means a few bulleted groups, never an essay and never a stripped-bare two-liner that drops needed substance. Expand only when explicitly asked for depth.
 - **Never edit, create, commit, or push anything without explicit permission for that specific action. This overrides every other rule in this file, including the auto-commit rule below.** Questions and opinions get information only; propose changes in chat and wait for the user to say go. Permission for one named edit does not authorize any other change.
 - **User uses dictation software. Transcription errors are common.** Words come through garbled (e.g., "list of LED" meant "let's do LED"; "belt and lid" meant "Built and Led"; "it hub" meant "GitHub"; "ocnnection" meant "connection"). If a phrase doesn't parse cleanly, ASK for clarification rather than guessing at meaning or ignoring the weird word. Do not treat dictation typos as content — they are transcription noise. Context usually makes intent clear; if it does not, stop and ask.
 - **When presenting options to pick from, ALWAYS number them 1, 2, 3 — never use A, B, C.** User picks options by number. Applies to every option list in chat.
