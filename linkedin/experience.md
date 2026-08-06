@@ -27,7 +27,7 @@ Built compliance, PII protection, and retrieval validation as architectural inva
 
 ## Project 2 — Enterprise AI Platform
 
-Architected and scaled the enterprise AI platform from greenfield, now powering 25+ production applications and 100K+ daily requests, aligning leadership and stakeholders as AI capabilities evolved quarterly.
+Architected and scaled the enterprise AI platform from scratch, now powering 25+ production applications and 100K+ daily requests, aligning leadership and stakeholders as AI capabilities evolved quarterly.
 
 Designed the platform as a full AI harness with agent, RAG, and MCP builders eliminating per team integration, universal Tool Catalog unifying all integration types, with prompt management, evals, and cost governance.
 

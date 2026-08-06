@@ -83,3 +83,7 @@ Backed by free public counter API at `https://abacus.jasoncameron.dev`, namespac
 - Metric boxes should have consistent size — do not stretch single boxes to fill the full row.
 - The `drafts/` folder is for working content (gitignored). Keep a copy of source materials there.
 - **Do not take action unless explicitly asked.** If the user asks a question or asks for an opinion, respond with information only. Do not edit files, run commands, or make changes unless the user says to do so.
+
+## BANNED WORD: "greenfield" (added Aug 2026)
+
+Never use the word "greenfield" in any answer, resume bullet, page, or generated material. It has flopped interviews. Say "from scratch", "from day one", or "architected the first version". If it appears anywhere in this repo (outside scraped job-description data), remove it on sight. Scraped JD text quoting employers is exempt.
