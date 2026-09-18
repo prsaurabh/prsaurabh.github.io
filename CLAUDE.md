@@ -12,7 +12,7 @@ Resume preparation and the resume source of truth live in the **interview-prep**
 
 ## ACTIVE CORRECTIONS (remove when resolved)
 - **Answer everything that is asked.** Address every distinct part of the message; if a part cannot be done, say so explicitly instead of dropping it.
-- **User uses dictation software. Transcription errors are common.** Words come through garbled (e.g., "list of LED" meant "let's do LED"; "belt and lid" meant "Built and Led"; "it hub" meant "GitHub"; "ocnnection" meant "connection"). If a phrase doesn't parse cleanly, ASK for clarification rather than guessing at meaning or ignoring the weird word. Do not treat dictation typos as content — they are transcription noise. Context usually makes intent clear; if it does not, stop and ask.
+- **Known mis-hearings in this repo:** "list of LED" = "let's do LED"; "belt and lid" = "Built and Led"; "it hub" = "GitHub".
 - **When presenting options to pick from, ALWAYS number them 1, 2, 3 — never use A, B, C.** User picks options by number. Applies to every option list in chat.
 - **Project/article titles must be 4-5 words** — not 1-2 word brand names, not full sentences. Think GitHub repo style but slightly longer.
 - **Do NOT reuse the old name** when renaming something — that's the whole point of renaming.
