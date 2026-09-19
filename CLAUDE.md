@@ -33,7 +33,7 @@ This is a personal portfolio website (GitHub Pages) for Saurabh Prasad, Senior S
 ## Contact info (job search, 2026)
 Active contact info for resumes, LinkedIn, website, and any new public copy:
 - **Email:** `saurabhprasad.tech@gmail.com` (replaces old `prsaurabh@gmail.com` everywhere — do not use the old one)
-- **Phone:** `657-646-7598` (full resume only; short/public resume omits phone by design)
+- **Phone:** not stored in this public repo. It goes on the full resume only; the short/public resume omits it by design.
 - **Location:** New York, NY
 
 ## LinkedIn canonical sources
